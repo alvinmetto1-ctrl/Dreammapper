@@ -319,6 +319,38 @@ button{
     font-size:12px;
 }
 
+.theme-stats{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-top:15px;
+}
+
+.theme-stat-item{
+    background:#f0f7f4;
+    padding:12px;
+    border-radius:6px;
+    border-left:4px solid #4CAF50;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.theme-stat-label{
+    font-weight:bold;
+    font-size:14px;
+    color:#2e7d32;
+}
+
+.theme-stat-count{
+    background:#c8e6c9;
+    color:#1b5e20;
+    padding:6px 12px;
+    border-radius:12px;
+    font-weight:bold;
+    font-size:13px;
+}
+
 .status-message{
     margin-top:10px;
     padding:10px;
@@ -370,13 +402,18 @@ button{
     </div>
 
     <div class="card">
-        <h2>📊 All Emotions Overview</h2>
+        <h2>📊 Statistics & Patterns</h2>
 
         <div class="stat" id="totalDreams">
             Total Dreams: 0
         </div>
 
         <div id="allEmotionStats"></div>
+
+        <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+
+        <div class="stat">🔄 Recurring Themes</div>
+        <div id="recurringThemesStats"></div>
     </div>
 
     <div class="card">
@@ -642,6 +679,33 @@ function buildEmotionFlow(transitions) {
     return flow.length > 0 ? flow : "Neutral dream";
 }
 
+function detectRecurringThemes(dreams) {
+    const themeCounts = {};
+
+    dreams.forEach(dream => {
+        if (dream.themes) {
+            dream.themes.forEach(theme => {
+                themeCounts[theme] = (themeCounts[theme] || 0) + 1;
+            });
+        }
+    });
+
+    const recurringThemes = [];
+
+    Object.entries(themeCounts).forEach(([theme, count]) => {
+        if (count >= 2) {
+            recurringThemes.push({
+                theme,
+                occurrences: count
+            });
+        }
+    });
+
+    recurringThemes.sort((a, b) => b.occurrences - a.occurrences);
+
+    return recurringThemes;
+}
+
 function summarizeDream(text, themes, detectedEmotions) {
     let summary = "";
 
@@ -897,6 +961,7 @@ function updateStats(){
     .innerText =
     "Total Dreams: " + dreams.length;
 
+    // EMOTION STATS
     let allEmotionTotals = {};
 
     dreams.forEach(dream => {
@@ -923,10 +988,31 @@ function updateStats(){
         });
         emotionStatsHTML += '</div>';
     } else {
-        emotionStatsHTML = '<p style="color:#999;">No dreams recorded yet. Start recording to see emotion statistics!</p>';
+        emotionStatsHTML = '<p style="color:#999;">No emotions recorded yet.</p>';
     }
 
     document.getElementById("allEmotionStats").innerHTML = emotionStatsHTML;
+
+    // THEME FREQUENCY TRACKING (Stage 1)
+    const recurringThemes = detectRecurringThemes(dreams);
+    
+    let themeStatsHTML = '';
+    if (recurringThemes.length > 0) {
+        themeStatsHTML += '<div class="theme-stats">';
+        recurringThemes.forEach(({theme, occurrences}) => {
+            themeStatsHTML += `
+                <div class="theme-stat-item">
+                    <span class="theme-stat-label">📌 ${theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
+                    <span class="theme-stat-count">${occurrences} dreams</span>
+                </div>
+            `;
+        });
+        themeStatsHTML += '</div>';
+    } else {
+        themeStatsHTML = '<p style="color:#999;">Record dreams with themes to see recurring patterns.</p>';
+    }
+
+    document.getElementById("recurringThemesStats").innerHTML = themeStatsHTML;
 }
 
 renderDreams();
