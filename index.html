@@ -151,6 +151,23 @@ button{
     background:#2196f3;
 }
 
+.emotion-confusion{
+    background:#795548;
+}
+
+.emotion-awe{
+    background:#ffc107;
+    color:#333;
+}
+
+.emotion-relief{
+    background:#00bcd4;
+}
+
+.emotion-empowerment{
+    background:#ff5722;
+}
+
 .emotion-label{
     font-weight:bold;
     color:#666;
@@ -159,8 +176,38 @@ button{
 }
 
 .stat{
-    margin-bottom:8px;
+    margin-bottom:12px;
     font-weight:bold;
+}
+
+.emotion-stats{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-top:15px;
+}
+
+.emotion-stat-item{
+    background:#f9f9f9;
+    padding:10px;
+    border-radius:6px;
+    border-left:4px solid #ccc;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.emotion-stat-label{
+    font-weight:bold;
+    font-size:14px;
+}
+
+.emotion-stat-count{
+    background:#ddd;
+    padding:4px 10px;
+    border-radius:12px;
+    font-weight:bold;
+    font-size:12px;
 }
 
 .status-message{
@@ -214,15 +261,13 @@ button{
     </div>
 
     <div class="card">
-        <h2>Statistics</h2>
+        <h2>📊 All Emotions Overview</h2>
 
         <div class="stat" id="totalDreams">
             Total Dreams: 0
         </div>
 
-        <div class="stat" id="commonEmotion">
-            Most Common Emotion: None
-        </div>
+        <div id="allEmotionStats"></div>
     </div>
 
     <div class="card">
@@ -304,6 +349,45 @@ function showStatus(message, type) {
     }, 3000);
 }
 
+function extractEmotionTimeline(text) {
+    const emotions = {
+        fear: ["afraid", "scared", "terrified", "killed", "chased", "attack", "danger", "threat", "run"],
+        sadness: ["sad", "crying", "loss", "dead", "lonely"],
+        confusion: ["confused", "strange", "weird", "didn't understand", "bewildered", "reincarnated", "different"],
+        awe: ["huge", "colossal", "massive", "gigantic", "aura", "powerful", "overwhelming"],
+        relief: ["safe", "protected", "unharmed", "escaped", "calm", "relief"],
+        empowerment: ["strong", "power", "controlled", "defeated", "scattered", "dominant"]
+    };
+
+    // split dream into sentences (simple segmentation)
+    const sentences = text.toLowerCase().match(/[^.!?]+[.!?]?/g) || [];
+
+    const timeline = sentences.map(sentence => {
+        let scores = {};
+
+        for (let [emotion, keywords] of Object.entries(emotions)) {
+            scores[emotion] = 0;
+
+            for (let word of keywords) {
+                if (sentence.includes(word)) {
+                    scores[emotion]++;
+                }
+            }
+        }
+
+        // pick strongest emotion in that sentence
+        let topEmotion = Object.entries(scores).sort((a,b) => b[1]-a[1])[0];
+
+        return {
+            text: sentence.trim(),
+            emotion: topEmotion[0],
+            intensity: topEmotion[1]
+        };
+    });
+
+    return timeline;
+}
+
 function extractEmotions(text) {
     const emotionKeywords = {
         fear: ["afraid", "scared", "terrified", "horror", "nightmare", "danger", "threat", "evil", "demon"],
@@ -311,7 +395,11 @@ function extractEmotions(text) {
         anxiety: ["worried", "anxious", "stress", "panic", "nervous", "unsure", "uncertain", "confused", "trapped"],
         excitement: ["excited", "happy", "joy", "wonderful", "amazing", "fantastic", "thrilled", "exhilarated"],
         anger: ["angry", "furious", "mad", "rage", "fight", "conflict", "arguing", "aggressive"],
-        peace: ["calm", "peaceful", "serene", "quiet", "content", "relaxed", "safe"]
+        peace: ["calm", "peaceful", "serene", "quiet", "content", "relaxed", "safe"],
+        confusion: ["confused", "strange", "weird", "bewildered", "different"],
+        awe: ["huge", "colossal", "massive", "gigantic", "aura", "powerful", "overwhelming"],
+        relief: ["protected", "unharmed", "escaped"],
+        empowerment: ["strong", "power", "controlled", "dominant"]
     };
 
     const lowerText = text.toLowerCase();
@@ -387,6 +475,22 @@ function summarizeDream(text, themes, detectedEmotions) {
 
     if (detectedEmotions["anger"]) {
         summary += "This suggests tension, frustration, or suppressed feelings. ";
+    }
+
+    if (detectedEmotions["confusion"]) {
+        summary += "There are elements of uncertainty or disorientation. ";
+    }
+
+    if (detectedEmotions["awe"]) {
+        summary += "Something grand or overwhelming is present. ";
+    }
+
+    if (detectedEmotions["relief"]) {
+        summary += "There is a sense of release or safety. ";
+    }
+
+    if (detectedEmotions["empowerment"]) {
+        summary += "This reflects feelings of strength or control. ";
     }
 
     // Theme-based meaning layer
@@ -476,9 +580,29 @@ function getEmotionColor(emotion) {
         "anxiety": "emotion-anxiety",
         "excitement": "emotion-excitement",
         "anger": "emotion-anger",
-        "peace": "emotion-peace"
+        "peace": "emotion-peace",
+        "confusion": "emotion-confusion",
+        "awe": "emotion-awe",
+        "relief": "emotion-relief",
+        "empowerment": "emotion-empowerment"
     };
     return colors[emotion] || "emotion-peace";
+}
+
+function getEmotionIcon(emotion) {
+    const icons = {
+        "fear": "😨",
+        "sadness": "😢",
+        "anxiety": "😰",
+        "excitement": "🤩",
+        "anger": "😠",
+        "peace": "😌",
+        "confusion": "😕",
+        "awe": "🤩",
+        "relief": "😅",
+        "empowerment": "💪"
+    };
+    return icons[emotion] || "😌";
 }
 
 function renderDreams(){
@@ -496,7 +620,7 @@ function renderDreams(){
             emotionBadges += `<div class="emotion-label">🧠 Emotions Detected:</div>`;
             for (let emotion in dream.emotions) {
                 const count = dream.emotions[emotion];
-                emotionBadges += `<span class="emotion-badge ${getEmotionColor(emotion)}">${emotion.toUpperCase()} (${count})</span>`;
+                emotionBadges += `<span class="emotion-badge ${getEmotionColor(emotion)}">${getEmotionIcon(emotion)} ${emotion.toUpperCase()} (${count})</span>`;
             }
         }
 
@@ -526,38 +650,39 @@ function updateStats(){
     .innerText =
     "Total Dreams: " + dreams.length;
 
-    let emotionCounts = {};
+    // Calculate totals for ALL emotions across all dreams
+    let allEmotionTotals = {};
 
     dreams.forEach(dream => {
         if (dream.emotions) {
-            // Find the emotion with highest count for this dream
-            let maxEmotion = "peace";
-            let maxCount = 0;
             for (let emotion in dream.emotions) {
-                if (dream.emotions[emotion] > maxCount) {
-                    maxCount = dream.emotions[emotion];
-                    maxEmotion = emotion;
-                }
+                allEmotionTotals[emotion] = (allEmotionTotals[emotion] || 0) + dream.emotions[emotion];
             }
-            emotionCounts[maxEmotion] = (emotionCounts[maxEmotion] || 0) + 1;
         }
     });
 
-    let commonEmotion = "None";
-    let highest = 0;
+    // Sort emotions by frequency (highest first)
+    const sortedEmotions = Object.entries(allEmotionTotals)
+        .sort((a, b) => b[1] - a[1]);
 
-    for(let emotion in emotionCounts){
-
-        if(emotionCounts[emotion] > highest){
-
-            highest = emotionCounts[emotion];
-            commonEmotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
-        }
+    // Generate emotion stats display
+    let emotionStatsHTML = '';
+    if (sortedEmotions.length > 0) {
+        emotionStatsHTML += '<div class="emotion-stats">';
+        sortedEmotions.forEach(([emotion, count]) => {
+            emotionStatsHTML += `
+                <div class="emotion-stat-item" style="border-left-color: var(--${emotion}-color);">
+                    <span class="emotion-stat-label">${getEmotionIcon(emotion)} ${emotion.charAt(0).toUpperCase() + emotion.slice(1)}</span>
+                    <span class="emotion-stat-count">${count}</span>
+                </div>
+            `;
+        });
+        emotionStatsHTML += '</div>';
+    } else {
+        emotionStatsHTML = '<p style="color:#999;">No dreams recorded yet. Start recording to see emotion statistics!</p>';
     }
 
-    document.getElementById("commonEmotion")
-    .innerText =
-    "Most Common Emotion: " + commonEmotion;
+    document.getElementById("allEmotionStats").innerHTML = emotionStatsHTML;
 }
 
 renderDreams();
