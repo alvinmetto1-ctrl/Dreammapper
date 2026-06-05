@@ -111,6 +111,53 @@ button{
     color:#333;
 }
 
+.emotions-detected{
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+.emotion-badge{
+    display:inline-block;
+    padding:6px 12px;
+    margin-right:8px;
+    margin-bottom:8px;
+    border-radius:20px;
+    font-size:14px;
+    font-weight:bold;
+    color:white;
+}
+
+.emotion-fear{
+    background:#f44336;
+}
+
+.emotion-sadness{
+    background:#3f51b5;
+}
+
+.emotion-anxiety{
+    background:#ff9800;
+}
+
+.emotion-excitement{
+    background:#4caf50;
+}
+
+.emotion-anger{
+    background:#9c27b0;
+}
+
+.emotion-peace{
+    background:#2196f3;
+}
+
+.emotion-label{
+    font-weight:bold;
+    color:#666;
+    margin-bottom:5px;
+    font-size:13px;
+}
+
 .stat{
     margin-bottom:8px;
     font-weight:bold;
@@ -153,15 +200,6 @@ button{
         <textarea id="description"
         rows="5"
         placeholder="Describe your dream..."></textarea>
-
-        <select id="emotion">
-            <option>Happy</option>
-            <option>Sad</option>
-            <option>Fear</option>
-            <option>Anxiety</option>
-            <option>Excitement</option>
-            <option>Anger</option>
-        </select>
 
         <div class="button-group">
             <button class="save-btn" onclick="saveDream()">
@@ -226,12 +264,8 @@ if (window.SpeechRecognition || window.webkitSpeechRecognition) {
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         
-        // Try to extract title and emotion from speech
-        const dreamData = parseVoiceInput(transcript);
-        
-        document.getElementById("title").value = dreamData.title;
-        document.getElementById("description").value = dreamData.description;
-        document.getElementById("emotion").value = dreamData.emotion;
+        document.getElementById("title").value = transcript.split(".")[0].substring(0, 50) || "Voice Dream";
+        document.getElementById("description").value = transcript;
         
         showStatus("Dream captured! Feel free to edit and save.", "success");
     };
@@ -256,30 +290,6 @@ function toggleVoiceRecording() {
     }
 }
 
-function parseVoiceInput(transcript) {
-    // Simple parsing logic - can be enhanced based on needs
-    const words = transcript.split(" ");
-    
-    // Check if transcript contains emotion keywords
-    let emotion = "Happy"; // default
-    const emotions = ["happy", "sad", "fear", "anxiety", "excitement", "anger"];
-    
-    for (let word of words) {
-        for (let emo of emotions) {
-            if (word.toLowerCase().includes(emo)) {
-                emotion = emo.charAt(0).toUpperCase() + emo.slice(1);
-                break;
-            }
-        }
-    }
-
-    return {
-        title: transcript.split(".")[0].substring(0, 50) || "Voice Dream",
-        description: transcript,
-        emotion: emotion
-    };
-}
-
 function showStatus(message, type) {
     const statusEl = document.getElementById("statusMessage");
     statusEl.textContent = message;
@@ -294,50 +304,43 @@ function showStatus(message, type) {
     }, 3000);
 }
 
-function saveDream(){
-
-    const title =
-    document.getElementById("title").value;
-
-    const description =
-    document.getElementById("description").value;
-
-    const emotion =
-    document.getElementById("emotion").value;
-
-    if(title.trim()==="" || description.trim()===""){
-        showStatus("Please enter a title and description.", "error");
-        return;
-    }
-
-    const dream = {
-        title,
-        description,
-        emotion,
-        date:new Date().toLocaleDateString()
+function extractEmotions(text) {
+    const emotionKeywords = {
+        fear: ["afraid", "scared", "terrified", "horror", "nightmare", "danger", "threat", "evil", "demon"],
+        sadness: ["sad", "crying", "lost", "dead", "dying", "loss", "grave", "alone", "lonely"],
+        anxiety: ["worried", "anxious", "stress", "panic", "nervous", "unsure", "uncertain", "confused", "trapped"],
+        excitement: ["excited", "happy", "joy", "wonderful", "amazing", "fantastic", "thrilled", "exhilarated"],
+        anger: ["angry", "furious", "mad", "rage", "fight", "conflict", "arguing", "aggressive"],
+        peace: ["calm", "peaceful", "serene", "quiet", "content", "relaxed", "safe"]
     };
 
-    dreams.push(dream);
+    const lowerText = text.toLowerCase();
+    const detected = {};
 
-    localStorage.setItem(
-        "dreams",
-        JSON.stringify(dreams)
-    );
+    for (let emotion in emotionKeywords) {
+        let score = 0;
 
-    document.getElementById("title").value="";
-    document.getElementById("description").value="";
+        for (let keyword of emotionKeywords[emotion]) {
+            if (lowerText.includes(keyword)) {
+                score += 1;
+            }
+        }
 
-    showStatus("Dream saved successfully!", "success");
-    renderDreams();
+        if (score > 0) {
+            detected[emotion] = score;
+        }
+    }
+
+    return detected;
 }
 
 function extractThemes(text) {
     // Extract themes from dream description
     const themesMap = {
-        "school": ["school", "class", "exam", "teacher", "student", "study"],
-        "chase": ["chase", "chasing", "run", "running", "escape", "pursuing"],
-        "water": ["water", "ocean", "sea", "river", "lake", "swimming", "drowning"],
-        "falling": ["fall", "falling", "fell", "drop", "dropping"],
+        "school": ["school", "class", "exam", "teacher", "student", "study", "university", "college"],
+        "chase": ["chase", "chasing", "run", "running", "escape", "pursuing", "pursued"],
+        "water": ["water", "ocean", "sea", "river", "lake", "swimming", "drowning", "swim"],
+        "falling": ["fall", "falling", "fell", "drop", "dropping", "plunge"],
         "home": ["home", "house", "room", "apartment", "building", "family", "parents"]
     };
 
@@ -356,42 +359,34 @@ function extractThemes(text) {
     return foundThemes;
 }
 
-function summarizeDream(text, themes, emotions) {
-    // Rule-based "AI-style" summarizer
+function summarizeDream(text, themes, detectedEmotions) {
+    // Rule-based "AI-style" summarizer with detected emotions
 
     let summary = "";
 
-    // Base interpretation
-    if (emotions.includes("Fear")) {
+    // Base interpretation from detected emotions
+    if (detectedEmotions["fear"]) {
         summary += "This dream reflects anxiety or a sense of threat. ";
     }
 
-    if (emotions.includes("Confusion")) {
-        summary += "There is a feeling of uncertainty or lack of direction. ";
+    if (detectedEmotions["anxiety"]) {
+        summary += "There is underlying worry or stress present. ";
     }
 
-    if (emotions.includes("Peace")) {
-        summary += "The dream has a calm and stable emotional tone. ";
-    }
-
-    if (emotions.includes("Sad")) {
+    if (detectedEmotions["sadness"]) {
         summary += "This suggests emotional weight or loss. ";
     }
 
-    if (emotions.includes("Excitement")) {
+    if (detectedEmotions["excitement"]) {
         summary += "There is high energy and positive stimulation. ";
     }
 
-    if (emotions.includes("Happy")) {
-        summary += "This reflects positive energy and contentment. ";
+    if (detectedEmotions["peace"]) {
+        summary += "The dream has a calm and stable emotional tone. ";
     }
 
-    if (emotions.includes("Anger")) {
+    if (detectedEmotions["anger"]) {
         summary += "This suggests tension, frustration, or suppressed feelings. ";
-    }
-
-    if (emotions.includes("Anxiety")) {
-        summary += "There is underlying worry or stress present. ";
     }
 
     // Theme-based meaning layer
@@ -427,13 +422,63 @@ function toggleSummary(index) {
     const summaryEl = document.getElementById(`summary-${index}`);
     if (summaryEl.style.display === "none" || summaryEl.style.display === "") {
         const dream = dreams[dreams.length - 1 - index];
+        const detectedEmotions = extractEmotions(dream.description);
         const themes = extractThemes(dream.description);
-        const summary = summarizeDream(dream.description, themes, [dream.emotion]);
-        summaryEl.textContent = summary;
+        const summary = summarizeDream(dream.description, themes, detectedEmotions);
+        summaryEl.innerHTML = summary;
         summaryEl.style.display = "block";
     } else {
         summaryEl.style.display = "none";
     }
+}
+
+function saveDream(){
+
+    const title =
+    document.getElementById("title").value;
+
+    const description =
+    document.getElementById("description").value;
+
+    if(title.trim()==="" || description.trim()===""){
+        showStatus("Please enter a title and description.", "error");
+        return;
+    }
+
+    // AI automatically detects emotions from description
+    const detectedEmotions = extractEmotions(description);
+
+    const dream = {
+        title,
+        description,
+        emotions: detectedEmotions,
+        date:new Date().toLocaleDateString()
+    };
+
+    dreams.push(dream);
+
+    localStorage.setItem(
+        "dreams",
+        JSON.stringify(dreams)
+    );
+
+    document.getElementById("title").value="";
+    document.getElementById("description").value="";
+
+    showStatus("Dream saved successfully! Emotions detected automatically.", "success");
+    renderDreams();
+}
+
+function getEmotionColor(emotion) {
+    const colors = {
+        "fear": "emotion-fear",
+        "sadness": "emotion-sadness",
+        "anxiety": "emotion-anxiety",
+        "excitement": "emotion-excitement",
+        "anger": "emotion-anger",
+        "peace": "emotion-peace"
+    };
+    return colors[emotion] || "emotion-peace";
 }
 
 function renderDreams(){
@@ -445,11 +490,23 @@ function renderDreams(){
 
     dreams.slice().reverse().forEach((dream, index) => {
 
+        // Generate emotion badges
+        let emotionBadges = "";
+        if (dream.emotions) {
+            emotionBadges += `<div class="emotion-label">🧠 Emotions Detected:</div>`;
+            for (let emotion in dream.emotions) {
+                const count = dream.emotions[emotion];
+                emotionBadges += `<span class="emotion-badge ${getEmotionColor(emotion)}">${emotion.toUpperCase()} (${count})</span>`;
+            }
+        }
+
         dreamList.innerHTML += `
         <div class="dream">
             <h3>${dream.title}</h3>
             <p>${dream.description}</p>
-            <strong>Emotion:</strong> ${dream.emotion}<br>
+            <div class="emotions-detected">
+                ${emotionBadges}
+            </div>
             <small>${dream.date}</small>
             <br>
             <button class="summary-btn" onclick="toggleSummary(${index})">
@@ -469,22 +526,32 @@ function updateStats(){
     .innerText =
     "Total Dreams: " + dreams.length;
 
-    let counts = {};
+    let emotionCounts = {};
 
     dreams.forEach(dream => {
-        counts[dream.emotion] =
-        (counts[dream.emotion] || 0) + 1;
+        if (dream.emotions) {
+            // Find the emotion with highest count for this dream
+            let maxEmotion = "peace";
+            let maxCount = 0;
+            for (let emotion in dream.emotions) {
+                if (dream.emotions[emotion] > maxCount) {
+                    maxCount = dream.emotions[emotion];
+                    maxEmotion = emotion;
+                }
+            }
+            emotionCounts[maxEmotion] = (emotionCounts[maxEmotion] || 0) + 1;
+        }
     });
 
     let commonEmotion = "None";
     let highest = 0;
 
-    for(let emotion in counts){
+    for(let emotion in emotionCounts){
 
-        if(counts[emotion] > highest){
+        if(emotionCounts[emotion] > highest){
 
-            highest = counts[emotion];
-            commonEmotion = emotion;
+            highest = emotionCounts[emotion];
+            commonEmotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
         }
     }
 
