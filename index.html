@@ -84,6 +84,19 @@ button{
     background:#7b1fa2;
 }
 
+.analysis-btn{
+    background:#00897b;
+    color:white;
+    padding:8px 12px;
+    font-size:14px;
+    margin-top:5px;
+    margin-right:5px;
+}
+
+.analysis-btn:hover{
+    background:#00695c;
+}
+
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.7; }
@@ -109,6 +122,98 @@ button{
     border-radius:4px;
     font-style:italic;
     color:#333;
+}
+
+.dream-analysis{
+    background:#e8f5e9;
+    border-left:4px solid #00897b;
+    padding:15px;
+    margin-top:10px;
+    border-radius:4px;
+    display:none;
+}
+
+.dream-analysis.active{
+    display:block;
+}
+
+.analysis-section{
+    margin-bottom:15px;
+}
+
+.analysis-section h4{
+    margin:5px 0;
+    color:#00695c;
+    font-size:13px;
+}
+
+.analysis-section p{
+    margin:5px 0;
+    font-size:13px;
+    color:#333;
+}
+
+.emotion-flow{
+    background:white;
+    padding:10px;
+    border-radius:4px;
+    border:1px solid #80cbc4;
+    font-weight:bold;
+    font-size:14px;
+    color:#00695c;
+    text-align:center;
+}
+
+.intensity-bar{
+    background:white;
+    padding:10px;
+    border-radius:4px;
+    margin-top:5px;
+}
+
+.intensity-label{
+    font-size:12px;
+    color:#666;
+    margin-bottom:5px;
+}
+
+.intensity-meter{
+    width:100%;
+    height:20px;
+    background:#ddd;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.intensity-fill{
+    height:100%;
+    background:linear-gradient(90deg, #4caf50, #ff9800, #f44336);
+    transition: width 0.3s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    color:white;
+    font-weight:bold;
+}
+
+.symbols-list{
+    background:white;
+    padding:10px;
+    border-radius:4px;
+    border:1px solid #80cbc4;
+    font-size:13px;
+}
+
+.symbol-tag{
+    display:inline-block;
+    background:#80cbc4;
+    color:#00695c;
+    padding:4px 8px;
+    border-radius:12px;
+    margin-right:5px;
+    margin-bottom:5px;
+    font-size:12px;
 }
 
 .emotions-detected{
@@ -166,6 +271,10 @@ button{
 
 .emotion-empowerment{
     background:#ff5722;
+}
+
+.emotion-neutral{
+    background:#999;
 }
 
 .emotion-label{
@@ -359,7 +468,6 @@ function extractEmotionTimeline(text) {
         empowerment: ["strong", "power", "controlled", "defeated", "scattered", "dominant"]
     };
 
-    // split dream into sentences (simple segmentation)
     const sentences = text.toLowerCase().match(/[^.!?]+[.!?]?/g) || [];
 
     const timeline = sentences.map(sentence => {
@@ -375,7 +483,6 @@ function extractEmotionTimeline(text) {
             }
         }
 
-        // pick strongest emotion in that sentence
         let topEmotion = Object.entries(scores).sort((a,b) => b[1]-a[1])[0];
 
         return {
@@ -386,6 +493,56 @@ function extractEmotionTimeline(text) {
     });
 
     return timeline;
+}
+
+function analyzeDream(text) {
+    const emotions = {
+        fear: ["afraid", "scared", "terrified", "killed", "chased", "attack", "danger", "threat", "run"],
+        sadness: ["sad", "crying", "loss", "dead", "lonely"],
+        confusion: ["confused", "strange", "weird", "didn't", "bewildered", "reincarnated", "different", "why"],
+        awe: ["huge", "colossal", "massive", "gigantic", "aura", "overwhelming", "powerful"],
+        relief: ["safe", "protected", "unharmed", "escaped", "calm", "relief"],
+        empowerment: ["strong", "power", "controlled", "defeated", "scattered", "dominant", "fearless"]
+    };
+
+    const sentences = text.toLowerCase().match(/[^.!?]+[.!?]?/g) || [];
+
+    let timeline = [];
+    let transitions = [];
+    let previousEmotion = null;
+
+    for (let sentence of sentences) {
+        let scores = {};
+
+        for (let [emotion, keywords] of Object.entries(emotions)) {
+            scores[emotion] = 0;
+            for (let word of keywords) {
+                if (sentence.includes(word)) scores[emotion]++;
+            }
+        }
+
+        let [topEmotion, intensity] =
+            Object.entries(scores).sort((a, b) => b[1] - a[1])[0] || ["neutral", 0];
+
+        if (intensity === 0) topEmotion = "neutral";
+
+        timeline.push({
+            text: sentence.trim(),
+            emotion: topEmotion,
+            intensity
+        });
+
+        if (previousEmotion && previousEmotion !== topEmotion) {
+            transitions.push({
+                from: previousEmotion,
+                to: topEmotion
+            });
+        }
+
+        previousEmotion = topEmotion;
+    }
+
+    return { timeline, transitions };
 }
 
 function extractEmotions(text) {
@@ -423,7 +580,6 @@ function extractEmotions(text) {
 }
 
 function extractThemes(text) {
-    // Extract themes from dream description
     const themesMap = {
         "school": ["school", "class", "exam", "teacher", "student", "study", "university", "college"],
         "chase": ["chase", "chasing", "run", "running", "escape", "pursuing", "pursued"],
@@ -447,12 +603,48 @@ function extractThemes(text) {
     return foundThemes;
 }
 
-function summarizeDream(text, themes, detectedEmotions) {
-    // Rule-based "AI-style" summarizer with detected emotions
+function extractSymbols(text) {
+    const symbols = [
+        "school", "house", "water", "fire", "chase", "chase", "fall", "death", "demon", 
+        "angel", "family", "friend", "stranger", "monster", "door", "window", "road", 
+        "path", "forest", "mountain", "ocean", "sky", "light", "darkness"
+    ];
 
+    const lowerText = text.toLowerCase();
+    const foundSymbols = [];
+
+    for (let symbol of symbols) {
+        if (lowerText.includes(symbol) && !foundSymbols.includes(symbol)) {
+            foundSymbols.push(symbol);
+        }
+    }
+
+    return foundSymbols;
+}
+
+function calculateIntensity(timeline) {
+    if (timeline.length === 0) return 0;
+    const totalIntensity = timeline.reduce((sum, item) => sum + (item.intensity || 0), 0);
+    const avgIntensity = (totalIntensity / timeline.length) * 15;
+    return Math.min(100, Math.round(avgIntensity));
+}
+
+function buildEmotionFlow(transitions) {
+    if (transitions.length === 0) return "Neutral dream";
+    
+    const emotions = new Set();
+    transitions.forEach(t => {
+        emotions.add(t.from);
+        emotions.add(t.to);
+    });
+
+    let flow = Array.from(emotions).join(" → ");
+    return flow.length > 0 ? flow : "Neutral dream";
+}
+
+function summarizeDream(text, themes, detectedEmotions) {
     let summary = "";
 
-    // Base interpretation from detected emotions
     if (detectedEmotions["fear"]) {
         summary += "This dream reflects anxiety or a sense of threat. ";
     }
@@ -493,7 +685,6 @@ function summarizeDream(text, themes, detectedEmotions) {
         summary += "This reflects feelings of strength or control. ";
     }
 
-    // Theme-based meaning layer
     if (themes.includes("school")) {
         summary += "It may relate to pressure, evaluation, or personal growth. ";
     }
@@ -514,7 +705,6 @@ function summarizeDream(text, themes, detectedEmotions) {
         summary += "This may relate to identity, safety, or personal roots. ";
     }
 
-    // Fallback
     if (summary === "") {
         summary = "This dream contains mixed or unclear symbolic patterns.";
     }
@@ -536,6 +726,11 @@ function toggleSummary(index) {
     }
 }
 
+function toggleAnalysis(index) {
+    const analysisEl = document.getElementById(`analysis-${index}`);
+    analysisEl.classList.toggle("active");
+}
+
 function saveDream(){
 
     const title =
@@ -549,14 +744,25 @@ function saveDream(){
         return;
     }
 
-    // AI automatically detects emotions from description
+    // Run advanced analysis
+    const { timeline, transitions } = analyzeDream(description);
+    const themes = extractThemes(description);
+    const symbols = extractSymbols(description);
     const detectedEmotions = extractEmotions(description);
+    const intensity = calculateIntensity(timeline);
+    const emotionFlow = buildEmotionFlow(transitions);
 
     const dream = {
         title,
         description,
         emotions: detectedEmotions,
-        date:new Date().toLocaleDateString()
+        themes,
+        symbols,
+        timeline,
+        transitions,
+        emotionFlow,
+        intensity,
+        date: new Date().toLocaleDateString()
     };
 
     dreams.push(dream);
@@ -569,7 +775,7 @@ function saveDream(){
     document.getElementById("title").value="";
     document.getElementById("description").value="";
 
-    showStatus("Dream saved successfully! Emotions detected automatically.", "success");
+    showStatus("Dream saved successfully! Full analysis stored.", "success");
     renderDreams();
 }
 
@@ -584,7 +790,8 @@ function getEmotionColor(emotion) {
         "confusion": "emotion-confusion",
         "awe": "emotion-awe",
         "relief": "emotion-relief",
-        "empowerment": "emotion-empowerment"
+        "empowerment": "emotion-empowerment",
+        "neutral": "emotion-neutral"
     };
     return colors[emotion] || "emotion-peace";
 }
@@ -598,9 +805,10 @@ function getEmotionIcon(emotion) {
         "anger": "😠",
         "peace": "😌",
         "confusion": "😕",
-        "awe": "🤩",
+        "awe": "🌟",
         "relief": "😅",
-        "empowerment": "💪"
+        "empowerment": "💪",
+        "neutral": "😐"
     };
     return icons[emotion] || "😌";
 }
@@ -614,7 +822,6 @@ function renderDreams(){
 
     dreams.slice().reverse().forEach((dream, index) => {
 
-        // Generate emotion badges
         let emotionBadges = "";
         if (dream.emotions) {
             emotionBadges += `<div class="emotion-label">🧠 Emotions Detected:</div>`;
@@ -623,6 +830,42 @@ function renderDreams(){
                 emotionBadges += `<span class="emotion-badge ${getEmotionColor(emotion)}">${getEmotionIcon(emotion)} ${emotion.toUpperCase()} (${count})</span>`;
             }
         }
+
+        // Build analysis section
+        let analysisHTML = `
+            <div class="dream-analysis" id="analysis-${index}">
+                <div class="analysis-section">
+                    <h4>📍 Themes</h4>
+                    <p>${dream.themes && dream.themes.length > 0 ? dream.themes.join(", ").toUpperCase() : "No themes detected"}</p>
+                </div>
+
+                <div class="analysis-section">
+                    <h4>🎭 Emotion Flow</h4>
+                    <div class="emotion-flow">${dream.emotionFlow || "Loading..."}</div>
+                </div>
+
+                <div class="analysis-section">
+                    <h4>🔥 Emotional Intensity</h4>
+                    <div class="intensity-bar">
+                        <div class="intensity-label">Overall Dream Intensity</div>
+                        <div class="intensity-meter">
+                            <div class="intensity-fill" style="width: ${dream.intensity || 0}%;">
+                                ${dream.intensity || 0}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <h4>🔮 Detected Symbols</h4>
+                    <div class="symbols-list">
+                        ${dream.symbols && dream.symbols.length > 0 
+                            ? dream.symbols.map(s => `<span class="symbol-tag">${s}</span>`).join("")
+                            : "No symbols detected"}
+                    </div>
+                </div>
+            </div>
+        `;
 
         dreamList.innerHTML += `
         <div class="dream">
@@ -636,7 +879,11 @@ function renderDreams(){
             <button class="summary-btn" onclick="toggleSummary(${index})">
                 ✨ Get AI Summary
             </button>
+            <button class="analysis-btn" onclick="toggleAnalysis(${index})">
+                📊 View Analysis
+            </button>
             <div class="dream-summary" id="summary-${index}" style="display:none;"></div>
+            ${analysisHTML}
         </div>
         `;
     });
@@ -650,7 +897,6 @@ function updateStats(){
     .innerText =
     "Total Dreams: " + dreams.length;
 
-    // Calculate totals for ALL emotions across all dreams
     let allEmotionTotals = {};
 
     dreams.forEach(dream => {
@@ -661,11 +907,9 @@ function updateStats(){
         }
     });
 
-    // Sort emotions by frequency (highest first)
     const sortedEmotions = Object.entries(allEmotionTotals)
         .sort((a, b) => b[1] - a[1]);
 
-    // Generate emotion stats display
     let emotionStatsHTML = '';
     if (sortedEmotions.length > 0) {
         emotionStatsHTML += '<div class="emotion-stats">';
