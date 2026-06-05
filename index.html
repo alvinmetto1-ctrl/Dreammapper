@@ -72,6 +72,18 @@ button{
     animation: pulse 0.5s infinite;
 }
 
+.summary-btn{
+    background:#9C27B0;
+    color:white;
+    padding:8px 12px;
+    font-size:14px;
+    margin-top:10px;
+}
+
+.summary-btn:hover{
+    background:#7b1fa2;
+}
+
 @keyframes pulse {
     0% { opacity: 1; }
     50% { opacity: 0.7; }
@@ -87,6 +99,16 @@ button{
     border-left:4px solid #4CAF50;
     padding-left:10px;
     margin-bottom:15px;
+}
+
+.dream-summary{
+    background:#f0f4ff;
+    border-left:4px solid #9C27B0;
+    padding:10px;
+    margin-top:10px;
+    border-radius:4px;
+    font-style:italic;
+    color:#333;
 }
 
 .stat{
@@ -309,6 +331,111 @@ function saveDream(){
     renderDreams();
 }
 
+function extractThemes(text) {
+    // Extract themes from dream description
+    const themesMap = {
+        "school": ["school", "class", "exam", "teacher", "student", "study"],
+        "chase": ["chase", "chasing", "run", "running", "escape", "pursuing"],
+        "water": ["water", "ocean", "sea", "river", "lake", "swimming", "drowning"],
+        "falling": ["fall", "falling", "fell", "drop", "dropping"],
+        "home": ["home", "house", "room", "apartment", "building", "family", "parents"]
+    };
+
+    const lowerText = text.toLowerCase();
+    const foundThemes = [];
+
+    for (let theme in themesMap) {
+        for (let keyword of themesMap[theme]) {
+            if (lowerText.includes(keyword)) {
+                foundThemes.push(theme);
+                break;
+            }
+        }
+    }
+
+    return foundThemes;
+}
+
+function summarizeDream(text, themes, emotions) {
+    // Rule-based "AI-style" summarizer
+
+    let summary = "";
+
+    // Base interpretation
+    if (emotions.includes("Fear")) {
+        summary += "This dream reflects anxiety or a sense of threat. ";
+    }
+
+    if (emotions.includes("Confusion")) {
+        summary += "There is a feeling of uncertainty or lack of direction. ";
+    }
+
+    if (emotions.includes("Peace")) {
+        summary += "The dream has a calm and stable emotional tone. ";
+    }
+
+    if (emotions.includes("Sad")) {
+        summary += "This suggests emotional weight or loss. ";
+    }
+
+    if (emotions.includes("Excitement")) {
+        summary += "There is high energy and positive stimulation. ";
+    }
+
+    if (emotions.includes("Happy")) {
+        summary += "This reflects positive energy and contentment. ";
+    }
+
+    if (emotions.includes("Anger")) {
+        summary += "This suggests tension, frustration, or suppressed feelings. ";
+    }
+
+    if (emotions.includes("Anxiety")) {
+        summary += "There is underlying worry or stress present. ";
+    }
+
+    // Theme-based meaning layer
+    if (themes.includes("school")) {
+        summary += "It may relate to pressure, evaluation, or personal growth. ";
+    }
+
+    if (themes.includes("chase")) {
+        summary += "You may be avoiding a real-life stressor or issue. ";
+    }
+
+    if (themes.includes("water")) {
+        summary += "Water often reflects emotions or subconscious depth. ";
+    }
+
+    if (themes.includes("falling")) {
+        summary += "This can represent loss of control or instability. ";
+    }
+
+    if (themes.includes("home")) {
+        summary += "This may relate to identity, safety, or personal roots. ";
+    }
+
+    // Fallback
+    if (summary === "") {
+        summary = "This dream contains mixed or unclear symbolic patterns.";
+    }
+
+    return summary.trim();
+}
+
+function toggleSummary(index) {
+    const summaryEl = document.getElementById(`summary-${index}`);
+    if (summaryEl.style.display === "none" || summaryEl.style.display === "") {
+        const dream = dreams[dreams.length - 1 - index];
+        const themes = extractThemes(dream.description);
+        const summary = summarizeDream(dream.description, themes, [dream.emotion]);
+        summaryEl.textContent = summary;
+        summaryEl.style.display = "block";
+    } else {
+        summaryEl.style.display = "none";
+    }
+}
+
 function renderDreams(){
 
     const dreamList =
@@ -316,7 +443,7 @@ function renderDreams(){
 
     dreamList.innerHTML="";
 
-    dreams.slice().reverse().forEach(dream => {
+    dreams.slice().reverse().forEach((dream, index) => {
 
         dreamList.innerHTML += `
         <div class="dream">
@@ -324,6 +451,11 @@ function renderDreams(){
             <p>${dream.description}</p>
             <strong>Emotion:</strong> ${dream.emotion}<br>
             <small>${dream.date}</small>
+            <br>
+            <button class="summary-btn" onclick="toggleSummary(${index})">
+                ✨ Get AI Summary
+            </button>
+            <div class="dream-summary" id="summary-${index}" style="display:none;"></div>
         </div>
         `;
     });
