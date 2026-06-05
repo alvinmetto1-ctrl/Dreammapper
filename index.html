@@ -46,11 +46,41 @@ button{
     border-radius:6px;
     cursor:pointer;
     font-size:16px;
+    margin-right:5px;
 }
 
 .save-btn{
     background:#4CAF50;
     color:white;
+}
+
+.save-btn:hover{
+    background:#45a049;
+}
+
+.voice-btn{
+    background:#2196F3;
+    color:white;
+}
+
+.voice-btn:hover{
+    background:#0b7dda;
+}
+
+.voice-btn.recording{
+    background:#f44336;
+    animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.button-group{
+    display:flex;
+    gap:5px;
 }
 
 .dream{
@@ -62,6 +92,27 @@ button{
 .stat{
     margin-bottom:8px;
     font-weight:bold;
+}
+
+.status-message{
+    margin-top:10px;
+    padding:10px;
+    border-radius:6px;
+    display:none;
+}
+
+.status-message.success{
+    background:#d4edda;
+    color:#155724;
+    border:1px solid #c3e6cb;
+    display:block;
+}
+
+.status-message.error{
+    background:#f8d7da;
+    color:#721c24;
+    border:1px solid #f5c6cb;
+    display:block;
 }
 </style>
 </head>
@@ -90,9 +141,16 @@ button{
             <option>Anger</option>
         </select>
 
-        <button class="save-btn" onclick="saveDream()">
-            Save Dream
-        </button>
+        <div class="button-group">
+            <button class="save-btn" onclick="saveDream()">
+                Save Dream
+            </button>
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()">
+                🎤 Record Dream
+            </button>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
     </div>
 
     <div class="card">
@@ -120,6 +178,100 @@ button{
 let dreams =
 JSON.parse(localStorage.getItem("dreams")) || [];
 
+let recognition;
+let isRecording = false;
+
+// Initialize Speech Recognition
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById("voiceBtn").classList.add("recording");
+        document.getElementById("voiceBtn").textContent = "🎤 Recording...";
+        showStatus("Listening... speak your dream now", "");
+    };
+
+    recognition.onend = () => {
+        isRecording = false;
+        document.getElementById("voiceBtn").classList.remove("recording");
+        document.getElementById("voiceBtn").textContent = "🎤 Record Dream";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        
+        // Try to extract title and emotion from speech
+        const dreamData = parseVoiceInput(transcript);
+        
+        document.getElementById("title").value = dreamData.title;
+        document.getElementById("description").value = dreamData.description;
+        document.getElementById("emotion").value = dreamData.emotion;
+        
+        showStatus("Dream captured! Feel free to edit and save.", "success");
+    };
+
+    recognition.onerror = (event) => {
+        showStatus("Error: " + event.error, "error");
+    };
+} else {
+    document.getElementById("voiceBtn").style.display = "none";
+}
+
+function toggleVoiceRecording() {
+    if (!recognition) {
+        showStatus("Speech recognition not supported in your browser", "error");
+        return;
+    }
+
+    if (isRecording) {
+        recognition.stop();
+    } else {
+        recognition.start();
+    }
+}
+
+function parseVoiceInput(transcript) {
+    // Simple parsing logic - can be enhanced based on needs
+    const words = transcript.split(" ");
+    
+    // Check if transcript contains emotion keywords
+    let emotion = "Happy"; // default
+    const emotions = ["happy", "sad", "fear", "anxiety", "excitement", "anger"];
+    
+    for (let word of words) {
+        for (let emo of emotions) {
+            if (word.toLowerCase().includes(emo)) {
+                emotion = emo.charAt(0).toUpperCase() + emo.slice(1);
+                break;
+            }
+        }
+    }
+
+    return {
+        title: transcript.split(".")[0].substring(0, 50) || "Voice Dream",
+        description: transcript,
+        emotion: emotion
+    };
+}
+
+function showStatus(message, type) {
+    const statusEl = document.getElementById("statusMessage");
+    statusEl.textContent = message;
+    statusEl.className = "status-message";
+    if (type) {
+        statusEl.classList.add(type);
+    }
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        statusEl.className = "status-message";
+    }, 3000);
+}
+
 function saveDream(){
 
     const title =
@@ -132,7 +284,7 @@ function saveDream(){
     document.getElementById("emotion").value;
 
     if(title.trim()==="" || description.trim()===""){
-        alert("Please enter a title and description.");
+        showStatus("Please enter a title and description.", "error");
         return;
     }
 
@@ -153,6 +305,7 @@ function saveDream(){
     document.getElementById("title").value="";
     document.getElementById("description").value="";
 
+    showStatus("Dream saved successfully!", "success");
     renderDreams();
 }
 
@@ -213,4 +366,4 @@ renderDreams();
 </script>
 
 </body>
-                    </html>
+</html>
