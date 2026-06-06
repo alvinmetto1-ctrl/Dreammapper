@@ -382,13 +382,31 @@ button{
 
         <div class="card">
     <h2>Add Dream</h2>
-        
-        <input id="title" placeholder="Dream Title">
+<input id="title" placeholder="Dream Title">
 
-        <textarea id="description"
-        rows="5"
-        placeholder="Describe your dream..."></textarea>
+<textarea
+id="recentEvents"
+rows="3"
+placeholder="What events have been happening in the past few days?">
+</textarea>
 
+<textarea
+id="beforeSleep"
+rows="3"
+placeholder="What were you doing before you slept?">
+</textarea>
+
+<textarea
+id="recentThoughts"
+rows="3"
+placeholder="What have your recent thoughts been?">
+</textarea>
+
+<textarea
+id="description"
+rows="5"
+placeholder="Describe your dream...">
+</textarea>
         <div class="button-group">
             <button class="save-btn" onclick="saveDream()">
                 Save Dream
@@ -798,10 +816,19 @@ function toggleAnalysis(index) {
 function saveDream(){
 
     const title =
-    document.getElementById("title").value;
+document.getElementById("title").value;
 
-    const description =
-    document.getElementById("description").value;
+const recentEvents =
+document.getElementById("recentEvents").value;
+
+const beforeSleep =
+document.getElementById("beforeSleep").value;
+
+const recentThoughts =
+document.getElementById("recentThoughts").value;
+
+const description =
+document.getElementById("description").value;
 
     if(title.trim()==="" || description.trim()===""){
         showStatus("Please enter a title and description.", "error");
