@@ -1025,6 +1025,43 @@ function updateStats(){
 renderDreams();
 
 </script>
+<script>
+function saveDream() {
+    const title = document.getElementById("title").value;
+    const events = document.getElementById("recentEvents").value;
+    const thoughts = document.getElementById("recentThoughts").value;
+    const dream = document.getElementById("description").value;
 
+    if (!dream) {
+        showStatus("Please enter a dream.", "error");
+        return;
+    }
+
+    const entry = {
+        date: new Date().toISOString(),
+        title: title,
+        events: events,
+        thoughts: thoughts,
+        dream: dream
+    };
+
+    let dreams = JSON.parse(localStorage.getItem("dreams") || "[]");
+    dreams.unshift(entry);
+    localStorage.setItem("dreams", JSON.stringify(dreams));
+
+    showStatus("Dream saved successfully!", "success");
+
+    document.getElementById("title").value = "";
+    document.getElementById("recentEvents").value = "";
+    document.getElementById("recentThoughts").value = "";
+    document.getElementById("description").value = "";
+}
+
+function showStatus(message, type) {
+    const status = document.getElementById("status");
+    status.textContent = message;
+    status.className = "status-message " + type;
+}
+</script>
 </body>
 </html>
