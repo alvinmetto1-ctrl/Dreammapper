@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DreamMapper</title>
+<style>
+:root {
+  --bg: #0d0d1a;
+  --surface: #141428;
+  --surface2: #1c1c35;
+  --accent: #7c6ff7;
+  --accent2: #b06cf7;
+  --accent3: #6fc8f7;
+  --text: #e8e6ff;
+  --text-muted: #8882b8;
+  --border: #2a2a4a;
+  --success: #2ecc8a;
+  --error: #f7546c;
+  --warn: #f7b54c;
+}
+body.light {
+  --bg: #f0eeff;
+  --surface: #ffffff;
+  --surface2: #eae7ff;
+  --accent: #6055e8;
+  --accent2: #9b4ee8;
+  --accent3: #3a9fd6;
+  --text: #1a1635;
+  --text-muted: #6059a0;
+  --border: #ccc8ee;
+  --success: #1b9e68;
+  --error: #d63050;
+  --warn: #c8820a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 16px;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+.container { max-width: 820px; margin: auto; }
+
+/* HEADER */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.app-title {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+.header-controls { display: flex; gap: 10px; align-items: center; }
+.dark-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.dark-toggle:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.card h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.search-bar input, .search-bar select {
+  flex: 1;
+  min-width: 120px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 13px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.search-bar input::placeholder { color: var(--text-muted); }
+
+/* FORM */
+.form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  margin-top: 12px;
+  display: block;
+}
+input[type="text"], textarea, select {
+  width: 100%;
+  padding: 10px 13px;
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); }
+input[type="text"]::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+/* TAGS INPUT */
+.tags-input-area {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 44px;
+  align-items: center;
+  cursor: text;
+  margin-bottom: 4px;
+}
+.tags-input-area:focus-within { border-color: var(--accent); }
+.tag-chip {
+  background: var(--accent);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+.tag-chip .remove-tag { cursor: pointer; opacity: 0.7; }
+.tag-chip .remove-tag:hover { opacity: 1; }
+.tags-text-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 4px 6px !important;
+  width: auto !important;
+  flex: 1;
+  min-width: 100px;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 0 !important;
+}
+.tags-text-input:focus { outline: none; }
+
+/* BUTTONS */
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-voice { background: var(--accent3); color: #0d0d1a; }
+.btn-voice:hover { opacity: 0.85; }
+.btn-voice.recording { background: var(--error); color: white; animation: pulse 0.6s infinite; }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-sm:hover { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-danger { background: rgba(247,84,108,0.15); color: var(--error); border: 1px solid rgba(247,84,108,0.3); }
+.btn-danger:hover { background: var(--error); color: white; }
+.btn-fav { background: transparent; border: none; padding: 4px 8px; font-size: 16px; cursor: pointer; }
+.button-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+
+/* STATUS */
+.status-msg {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: none;
+}
+.status-msg.success { background: rgba(46,204,138,0.15); color: var(--success); border: 1px solid rgba(46,204,138,0.3); display: block; }
+.status-msg.error { background: rgba(247,84,108,0.15); color: var(--error); border: 1px solid rgba(247,84,108,0.3); display: block; }
+.status-msg.info { background: rgba(124,111,247,0.15); color: var(--accent); border: 1px solid rgba(124,111,247,0.3); display: block; }
+
+/* STATS */
+.stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.stat-number { font-size: 28px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 13px; color: var(--text-muted); }
+.emotion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.emotion-stat-item {
+  background: var(--surface2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--accent);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.emotion-stat-count {
+  background: var(--border);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.theme-item {
+  background: var(--surface2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--success);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.theme-count {
+  background: rgba(46,204,138,0.2);
+  color: var(--success);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* DREAM CARD */
+.dream-entry {
+  border-left: 3px solid var(--accent);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--surface2);
+  border-radius: 0 10px 10px 0;
+  position: relative;
+}
+.dream-entry.favorite { border-left-color: #f7b54c; }
+.dream-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.dream-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.dream-date { font-size: 12px; color: var(--text-muted); }
+.dream-desc { font-size: 13px; color: var(--text-muted); margin: 8px 0; line-height: 1.6; }
+.dream-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; }
+.dream-tag {
+  background: rgba(124,111,247,0.15);
+  color: var(--accent);
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* EMOTION BADGES */
+.emotion-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.emotion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+.ebg-fear { background: #f7546c; }
+.ebg-sadness { background: #5b72f7; }
+.ebg-anxiety { background: #f7a04c; }
+.ebg-excitement { background: #2ecc8a; }
+.ebg-anger { background: #9b4ee8; }
+.ebg-peace { background: #3a9fd6; }
+.ebg-confusion { background: #8c7660; }
+.ebg-awe { background: #f7d54c; color: #333; }
+.ebg-relief { background: #2eccc0; }
+.ebg-empowerment { background: #f76c40; }
+.ebg-neutral { background: #666; }
+
+/* INTENSITY BAR */
+.intensity-wrap { margin: 10px 0; }
+.intensity-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.intensity-track { background: var(--border); border-radius: 8px; height: 16px; overflow: hidden; }
+.intensity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--warn), var(--error));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: white;
+  transition: width 0.5s ease;
+}
+
+/* ANALYSIS PANEL */
+.analysis-panel {
+  margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: none;
+}
+.analysis-panel.open { display: block; }
+.analysis-section { margin-bottom: 14px; }
+.analysis-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+
+/* SCENE TIMELINE */
+.scene-list { display: flex; flex-direction: column; gap: 8px; }
+.scene-item {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  font-size: 13px;
+}
+.scene-emotion { font-size: 11px; color: var(--accent2); font-weight: 700; margin-top: 3px; }
+
+/* EMOTION FLOW */
+.emotion-flow-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.flow-arrow { color: var(--text-muted); font-size: 16px; }
+
+/* SYMBOL TAGS */
+.symbol-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.symbol-tag {
+  background: rgba(111,200,247,0.15);
+  color: var(--accent3);
+  border: 1px solid rgba(111,200,247,0.25);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* SUMMARY BOX */
+.summary-box {
+  background: rgba(124,111,247,0.08);
+  border-left: 3px solid var(--accent2);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-top: 10px;
+  display: none;
+  font-style: italic;
+}
+.summary-box.open { display: block; }
+
+/* SECTION DIVIDER */
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* SECTION HEADING */
+.section-heading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 14px 0 8px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+}
+.empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+
+/* RESPONSIVE */
+@media (max-width: 500px) {
+  .emotion-grid, .theme-grid { grid-template-columns: 1fr; }
+  .app-title { font-size: 20px; }
+  .stat-number { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="app-title">🌙 DreamMapper</div>
+    <div class="header-controls">
+      <button class="dark-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+    </div>
+  </div>
+
+  <!-- ADD DREAM CARD -->
+  <div class="card">
+    <h2>✍️ Add Dream</h2>
+
+    <label class="form-label">Dream Title</label>
+    <input type="text" id="title" placeholder="Give your dream a name...">
+
+    <label class="form-label">Recent Events <span style="color:var(--text-muted);font-weight:400">(what's been happening lately?)</span></label>
+    <textarea id="recentEvents" rows="2" placeholder="e.g. Had a big exam, argument with friend..."></textarea>
+
+    <label class="form-label">Before Sleep <span style="color:var(--text-muted);font-weight:400">(what were you doing?)</span></label>
+    <textarea id="beforeSleep" rows="2" placeholder="e.g. Watched a movie, was feeling anxious..."></textarea>
+
+    <label class="form-label">Recent Thoughts</label>
+    <textarea id="recentThoughts" rows="2" placeholder="e.g. Worried about work, thinking about family..."></textarea>
+
+    <label class="form-label">Dream Description <span style="color:var(--error)">*</span></label>
+    <textarea id="description" rows="5" placeholder="Describe your dream in as much detail as you remember..."></textarea>
+
+    <label class="form-label">Tags <span style="color:var(--text-muted);font-weight:400">(press Enter or comma to add)</span></label>
+    <div class="tags-input-area" id="tagsArea" onclick="document.getElementById('tagInput').focus()">
+      <input type="text" class="tags-text-input" id="tagInput" placeholder="Add tag..." onkeydown="handleTagInput(event)">
+    </div>
+
+    <div class="button-row">
+      <button class="btn-primary" onclick="saveDream()">💾 Save Dream</button>
+      <button class="btn-voice" id="voiceBtn" onclick="toggleVoiceRecording()">🎤 Record Dream</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div class="card">
+    <h2>🔍 Search Dreams</h2>
+    <div class="search-bar">
+      <input type="text" id="searchText" placeholder="Search by keyword..." oninput="renderDreams()">
+      <select id="searchEmotion" onchange="renderDreams()">
+        <option value="">All Emotions</option>
+        <option>fear</option><option>sadness</option><option>anxiety</option>
+        <option>excitement</option><option>anger</option><option>peace</option>
+        <option>confusion</option><option>awe</option><option>relief</option>
+        <option>empowerment</option>
+      </select>
+      <select id="searchTheme" onchange="renderDreams()">
+        <option value="">All Themes</option>
+        <option>school</option><option>chase</option><option>water</option>
+        <option>falling</option><option>home</option><option>flying</option>
+        <option>family</option><option>work</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STATS CARD -->
+  <div class="card">
+    <h2>📊 Statistics & Patterns</h2>
+    <div class="stat-row">
+      <div class="stat-number" id="totalDreamsNum">0</div>
+      <div class="stat-label">Dreams recorded</div>
+    </div>
+
+    <div class="section-heading">🧠 Emotion Frequency</div>
+    <div id="allEmotionStats"><p style="color:var(--text-muted);font-size:13px">No emotions recorded yet.</p></div>
+
+    <hr class="divider">
+
+    <div class="section-heading">🔄 Recurring Themes</div>
+    <div id="recurringThemesStats"><p style="color:var(--text-muted);font-size:13px">Record more dreams to see recurring patterns.</p></div>
+
+    <hr class="divider">
+
+    <div class="section-heading">🔮 Symbol Intelligence</div>
+    <div id="symbolStats"><p style="color:var(--text-muted);font-size:13px">Symbols will appear after you record dreams.</p></div>
+  </div>
+
+  <!-- DREAM HISTORY CARD -->
+  <div class="card">
+    <h2>📖 Dream History</h2>
+    <div id="dreamList"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let dreams = JSON.parse(localStorage.getItem("dreams")) || [];
+let currentTags = [];
+let recognition;
+let isRecording = false;
+let isDark = localStorage.getItem("theme") !== "light";
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function applyTheme() {
+  if (isDark) {
+    document.body.classList.remove("light");
+    document.getElementById("themeBtn").textContent = "☀️ Light";
+  } else {
+    document.body.classList.add("light");
+    document.getElementById("themeBtn").textContent = "🌙 Dark";
+  }
+}
+function toggleTheme() {
+  isDark = !isDark;
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  applyTheme();
+}
+applyTheme();
+
+// ─── STATUS ───────────────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const el = document.getElementById("statusMsg");
+  el.textContent = msg;
+  el.className = "status-msg " + type;
+  setTimeout(() => { el.className = "status-msg"; }, 3500);
+}
+
+// ─── TAGS ────────────────────────────────────────────────────────────────────
+function handleTagInput(e) {
+  if (e.key === "Enter" || e.key === ",") {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,/g, "");
+    if (val && !currentTags.includes(val)) {
+      currentTags.push(val);
+      renderTagChips();
+    }
+    e.target.value = "";
+  } else if (e.key === "Backspace" && e.target.value === "" && currentTags.length > 0) {
+    currentTags.pop();
+    renderTagChips();
+  }
+}
+function removeTag(tag) {
+  currentTags = currentTags.filter(t => t !== tag);
+  renderTagChips();
+}
+function renderTagChips() {
+  const area = document.getElementById("tagsArea");
+  const input = document.getElementById("tagInput");
+  area.innerHTML = "";
+  currentTags.forEach(tag => {
+    const chip = document.createElement("span");
+    chip.className = "tag-chip";
+    chip.innerHTML = `${tag} <span class="remove-tag" onclick="removeTag('${tag}')">✕</span>`;
+    area.appendChild(chip);
+  });
+  area.appendChild(input);
+  input.focus();
+}
+
+// ─── VOICE ───────────────────────────────────────────────────────────────────
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onstart = () => {
+    isRecording = true;
+    const btn = document.getElementById("voiceBtn");
+    btn.classList.add("recording");
+    btn.textContent = "🎤 Recording...";
+    showStatus("Listening… speak your dream now.", "info");
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    const btn = document.getElementById("voiceBtn");
+    btn.classList.remove("recording");
+    btn.textContent = "🎤 Record Dream";
+  };
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById("title").value = transcript.split(".")[0].substring(0, 50) || "Voice Dream";
+    document.getElementById("description").value = transcript;
+    showStatus("Dream captured! Edit and save when ready.", "success");
+  };
+  recognition.onerror = (e) => { showStatus("Mic error: " + e.error, "error"); };
+} else {
+  document.getElementById("voiceBtn").style.display = "none";
+}
+function toggleVoiceRecording() {
+  if (!recognition) { showStatus("Speech not supported in this browser.", "error"); return; }
+  isRecording ? recognition.stop() : recognition.start();
+}
+
+// ─── ANALYSIS ENGINES ────────────────────────────────────────────────────────
+const EMOTION_KEYWORDS = {
+  fear:        ["afraid","scared","terrified","horror","nightmare","danger","threat","evil","demon","attacked","chase","chased","chasing"],
+  sadness:     ["sad","crying","cried","lost","dead","dying","loss","grave","alone","lonely","missing","grief"],
+  anxiety:     ["worried","anxious","stress","panic","nervous","unsure","uncertain","confused","trapped","overwhelmed"],
+  excitement:  ["excited","happy","joy","wonderful","amazing","fantastic","thrilled","exhilarated","incredible","fun"],
+  anger:       ["angry","furious","mad","rage","fight","conflict","arguing","aggressive","yelling","shouting"],
+  peace:       ["calm","peaceful","serene","quiet","content","relaxed","safe","gentle","still","beautiful"],
+  confusion:   ["confused","strange","weird","bewildered","different","suddenly","somehow","bizarre","random"],
+  awe:         ["huge","colossal","massive","gigantic","aura","powerful","overwhelming","enormous","breathtaking","majestic"],
+  relief:      ["protected","unharmed","escaped","safe","rescued
