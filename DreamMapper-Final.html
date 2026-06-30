@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DreamMapper</title>
+<style>
+:root {
+  --bg: #0d0d1a;
+  --surface: #141428;
+  --surface2: #1c1c35;
+  --accent: #7c6ff7;
+  --accent2: #b06cf7;
+  --accent3: #6fc8f7;
+  --text: #e8e6ff;
+  --text-muted: #8882b8;
+  --border: #2a2a4a;
+  --success: #2ecc8a;
+  --error: #f7546c;
+  --warn: #f7b54c;
+}
+body.light {
+  --bg: #f0eeff;
+  --surface: #ffffff;
+  --surface2: #eae7ff;
+  --accent: #6055e8;
+  --accent2: #9b4ee8;
+  --accent3: #3a9fd6;
+  --text: #1a1635;
+  --text-muted: #6059a0;
+  --border: #ccc8ee;
+  --success: #1b9e68;
+  --error: #d63050;
+  --warn: #c8820a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 16px;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+.container { max-width: 820px; margin: auto; }
+
+/* HEADER */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.app-title {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+.header-controls { display: flex; gap: 10px; align-items: center; }
+.dark-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.dark-toggle:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.card h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* SEARCH BAR */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.search-bar input, .search-bar select {
+  flex: 1;
+  min-width: 120px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 13px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.search-bar input::placeholder { color: var(--text-muted); }
+
+/* FORM */
+.form-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  margin-top: 12px;
+  display: block;
+}
+input[type="text"], textarea, select {
+  width: 100%;
+  padding: 10px 13px;
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--accent); }
+input[type="text"]::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+/* TAGS INPUT */
+.tags-input-area {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 44px;
+  align-items: center;
+  cursor: text;
+  margin-bottom: 4px;
+}
+.tags-input-area:focus-within { border-color: var(--accent); }
+.tag-chip {
+  background: var(--accent);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+.tag-chip .remove-tag { cursor: pointer; opacity: 0.7; }
+.tag-chip .remove-tag:hover { opacity: 1; }
+.tags-text-input {
+  border: none !important;
+  background: transparent !important;
+  padding: 4px 6px !important;
+  width: auto !important;
+  flex: 1;
+  min-width: 100px;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 0 !important;
+}
+.tags-text-input:focus { outline: none; }
+
+/* BUTTONS */
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-voice { background: var(--accent3); color: #0d0d1a; }
+.btn-voice:hover { opacity: 0.85; }
+.btn-voice.recording { background: var(--error); color: white; animation: pulse 0.6s infinite; }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-sm:hover { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-danger { background: rgba(247,84,108,0.15); color: var(--error); border: 1px solid rgba(247,84,108,0.3); }
+.btn-danger:hover { background: var(--error); color: white; }
+.btn-fav { background: transparent; border: none; padding: 4px 8px; font-size: 16px; cursor: pointer; }
+.button-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+
+/* STATUS */
+.status-msg {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: none;
+}
+.status-msg.success { background: rgba(46,204,138,0.15); color: var(--success); border: 1px solid rgba(46,204,138,0.3); display: block; }
+.status-msg.error { background: rgba(247,84,108,0.15); color: var(--error); border: 1px solid rgba(247,84,108,0.3); display: block; }
+.status-msg.info { background: rgba(124,111,247,0.15); color: var(--accent); border: 1px solid rgba(124,111,247,0.3); display: block; }
+
+/* STATS */
+.stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.stat-number { font-size: 28px; font-weight: 800; color: var(--accent); }
+.stat-label { font-size: 13px; color: var(--text-muted); }
+.emotion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.emotion-stat-item {
+  background: var(--surface2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--accent);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.emotion-stat-count {
+  background: var(--border);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.theme-item {
+  background: var(--surface2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--success);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.theme-count {
+  background: rgba(46,204,138,0.2);
+  color: var(--success);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+/* DREAM CARD */
+.dream-entry {
+  border-left: 3px solid var(--accent);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: var(--surface2);
+  border-radius: 0 10px 10px 0;
+  position: relative;
+}
+.dream-entry.favorite { border-left-color: #f7b54c; }
+.dream-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.dream-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.dream-date { font-size: 12px; color: var(--text-muted); }
+.dream-desc { font-size: 13px; color: var(--text-muted); margin: 8px 0; line-height: 1.6; }
+.dream-tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0; }
+.dream-tag {
+  background: rgba(124,111,247,0.15);
+  color: var(--accent);
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* EMOTION BADGES */
+.emotion-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.emotion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+.ebg-fear { background: #f7546c; }
+.ebg-sadness { background: #5b72f7; }
+.ebg-anxiety { background: #f7a04c; }
+.ebg-excitement { background: #2ecc8a; }
+.ebg-anger { background: #9b4ee8; }
+.ebg-peace { background: #3a9fd6; }
+.ebg-confusion { background: #8c7660; }
+.ebg-awe { background: #f7d54c; color: #333; }
+.ebg-relief { background: #2eccc0; }
+.ebg-empowerment { background: #f76c40; }
+.ebg-neutral { background: #666; }
+
+/* INTENSITY BAR */
+.intensity-wrap { margin: 10px 0; }
+.intensity-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.intensity-track { background: var(--border); border-radius: 8px; height: 16px; overflow: hidden; }
+.intensity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--warn), var(--error));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: white;
+  transition: width 0.5s ease;
+}
+
+/* ANALYSIS PANEL */
+.analysis-panel {
+  margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: none;
+}
+.analysis-panel.open { display: block; }
+.analysis-section { margin-bottom: 14px; }
+.analysis-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px; }
+
+/* SCENE TIMELINE */
+.scene-list { display: flex; flex-direction: column; gap: 8px; }
+.scene-item {
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  font-size: 13px;
+}
+.scene-emotion { font-size: 11px; color: var(--accent2); font-weight: 700; margin-top: 3px; }
+
+/* EMOTION FLOW */
+.emotion-flow-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.flow-arrow { color: var(--text-muted); font-size: 16px; }
+
+/* SYMBOL TAGS */
+.symbol-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.symbol-tag {
+  background: rgba(111,200,247,0.15);
+  color: var(--accent3);
+  border: 1px solid rgba(111,200,247,0.25);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* SUMMARY BOX */
+.summary-box {
+  background: rgba(124,111,247,0.08);
+  border-left: 3px solid var(--accent2);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-top: 10px;
+  display: none;
+  font-style: italic;
+}
+.summary-box.open { display: block; }
+
+/* SECTION DIVIDER */
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* SECTION HEADING */
+.section-heading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 14px 0 8px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+}
+.empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+
+/* AI FEATURES */
+.ai-response {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text);
+  margin-top: 12px;
+  white-space: pre-wrap;
+  display: none;
+}
+.ai-response.open { display: block; }
+.ai-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 0;
+}
+.ai-loading .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dotbounce 1.2s infinite;
+}
+.ai-loading .dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-loading .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotbounce {
+  0%,80%,100% { transform: scale(0.7); opacity: 0.4; }
+  40% { transform: scale(1.1); opacity: 1; }
+}
+
+/* CHAT */
+.chat-messages {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-right: 4px;
+}
+.chat-msg {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 88%;
+}
+.chat-msg.user {
+  background: var(--accent);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg.ai {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+  white-space: pre-wrap;
+}
+.chat-msg.thinking {
+  background: var(--surface2);
+  border: 1px dashed var(--border);
+  align-self: flex-start;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+}
+.chat-input-row input {
+  flex: 1;
+  margin-bottom: 0;
+}
+.chat-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 20px;
+}
+
+/* COMPARE */
+.compare-select-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.compare-select-row select { flex: 1; min-width: 140px; }
+.compare-result {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.75;
+  display: none;
+  white-space: pre-wrap;
+}
+.compare-result.open { display: block; }
+.similarity-bar-wrap { margin: 12px 0; }
+.similarity-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+.similarity-track { background: var(--border); border-radius: 8px; height: 20px; overflow: hidden; }
+.similarity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+  transition: width 0.6s ease;
+}
+.quick-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.quick-q {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 5px 11px;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.quick-q:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* PHASE 3 - CHARTS & CALENDAR */
+.chart-container {
+  position: relative;
+  width: 100%;
+  margin: 14px 0;
+}
+canvas { width: 100% !important; }
+
+.chart-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.chart-tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.chart-tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* CALENDAR */
+.calendar-wrap { margin-top: 10px; }
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.calendar-title { font-size: 15px; font-weight: 700; }
+.cal-nav {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+  background: var(--surface2);
+  color: var(--text-muted);
+  border: 1px solid transparent;
+}
+.cal-day.empty { background: transparent; border-color: transparent; }
+.cal-day.has-dream {
+  background: rgba(124,111,247,0.25);
+  color: var(--accent);
+  border-color: var(--accent);
+  cursor: pointer;
+  font-weight: 800;
+}
+.cal-day.has-dream:hover { background: var(--accent); color: white; }
+.cal-day.today {
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+
+/* HEALTH REPORT */
+.health-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.health-score-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) 0%, var(--surface2) 0%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  flex-shrink: 0;
+  position: relative;
+}
+.health-score-circle::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.health-score-num {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.health-items { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.health-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface2);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.health-badge {
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-good { background: rgba(46,204,138,0.2); color: var(--success); }
+.badge-warn { background: rgba(247,181,76,0.2); color: var(--warn); }
+.badge-alert { background: rgba(247,84,108,0.2); color: var(--error); }
+.badge-neutral { background: var(--border); color: var(--text-muted); }
+
+/* DONUT CHART LEGEND */
+.donut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 500px) {
+  .emotion-grid, .theme-grid { grid-template-columns: 1fr; }
+  .app-title { font-size: 20px; }
+  .stat-number { font-size: 22px; }
+  .cal-day { font-size: 10px; }
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="app-title">🌙 DreamMapper</div>
+    <div class="header-controls">
+      <button class="dark-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light</button>
+    </div>
+  </div>
+
+  <!-- ADD DREAM CARD -->
+  <div class="card">
+    <h2>✍️ Add Dream</h2>
+
+    <label class="form-label">Dream Title</label>
+    <input type="text" id="title" placeholder="Give your dream a name...">
+
+    <label class="form-label">Recent Events <span style="color:var(--text-muted);font-weight:400">(what's been happening lately?)</span></label>
+    <textarea id="recentEvents" rows="2" placeholder="e.g. Had a big exam, argument with friend..."></textarea>
+
+    <label class="form-label">Before Sleep <span style="color:var(--text-muted);font-weight:400">(what were you doing?)</span></label>
+    <textarea id="beforeSleep" rows="2" placeholder="e.g. Watched a movie, was feeling anxious..."></textarea>
+
+    <label class="form-label">Recent Thoughts</label>
+    <textarea id="recentThoughts" rows="2" placeholder="e.g. Worried about work, thinking about family..."></textarea>
+
+    <label class="form-label">Dream Description <span style="color:var(--error)">*</span></label>
+    <textarea id="description" rows="5" placeholder="Describe your dream in as much detail as you remember..."></textarea>
+
+    <label class="form-label">Tags <span style="color:var(--text-muted);font-weight:400">(press Enter or comma to add)</span></label>
+    <div class="tags-input-area" id="tagsArea" onclick="document.getElementById('tagInput').focus()">
+      <input type="text" class="tags-text-input" id="tagInput" placeholder="Add tag..." onkeydown="handleTagInput(event)">
+    </div>
+
+    <div class="button-row">
+      <button class="btn-primary" onclick="saveDream()">💾 Save Dream</button>
+      <button class="btn-voice" id="voiceBtn" onclick="toggleVoiceRecording()">🎤 Record Dream</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <!-- SEARCH CARD -->
+  <div class="card">
+    <h2>🔍 Search Dreams</h2>
+    <div class="search-bar">
+      <input type="text" id="searchText" placeholder="Search by keyword..." oninput="renderDreams()">
+      <select id="searchEmotion" onchange="renderDreams()">
+        <option value="">All Emotions</option>
+        <option>fear</option><option>sadness</option><option>anxiety</option>
+        <option>excitement</option><option>anger</option><option>peace</option>
+        <option>confusion</option><option>awe</option><option>relief</option>
+        <option>empowerment</option>
+      </select>
+      <select id="searchTheme" onchange="renderDreams()">
+        <option value="">All Themes</option>
+        <option>school</option><option>chase</option><option>water</option>
+        <option>falling</option><option>home</option><option>flying</option>
+        <option>family</option><option>work</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STATS CARD -->
+  <div class="card">
+    <h2>📊 Statistics & Patterns</h2>
+    <div class="stat-row">
+      <div class="stat-number" id="totalDreamsNum">0</div>
+      <div class="stat-label">Dreams recorded</div>
+    </div>
+
+    <div class="section-heading">🧠 Emotion Frequency</div>
+    <div id="allEmotionStats"><p style="color:var(--text-muted);font-size:13px">No emotions recorded yet.</p></div>
+
+    <hr class="divider">
+
+    <div class="section-heading">🔄 Recurring Themes</div>
+    <div id="recurringThemesStats"><p style="color:var(--text-muted);font-size:13px">Record more dreams to see recurring patterns.</p></div>
+
+    <hr class="divider">
+
+    <div class="section-heading">🔮 Symbol Intelligence</div>
+    <div id="symbolStats"><p style="color:var(--text-muted);font-size:13px">Symbols will appear after you record dreams.</p></div>
+  </div>
+
+  <!-- ANALYTICS CARD -->
+  <div class="card">
+    <h2>📈 Dream Analytics</h2>
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchChart('emotions')">🧠 Emotions</button>
+      <button class="chart-tab" onclick="switchChart('themes')">📌 Themes</button>
+      <button class="chart-tab" onclick="switchChart('timeline')">📅 Timeline</button>
+      <button class="chart-tab" onclick="switchChart('donut')">🍩 Distribution</button>
+    </div>
+    <div class="chart-container">
+      <canvas id="mainChart" height="220"></canvas>
+    </div>
+    <div class="donut-legend" id="chartLegend"></div>
+  </div>
+
+  <!-- CALENDAR CARD -->
+  <div class="card">
+    <h2>📅 Dream Calendar</h2>
+    <div class="calendar-wrap">
+      <div class="calendar-header">
+        <button class="cal-nav" onclick="calPrev()">‹</button>
+        <div class="calendar-title" id="calTitle"></div>
+        <button class="cal-nav" onclick="calNext()">›</button>
+      </div>
+      <div class="calendar-grid" id="calGrid"></div>
+    </div>
+    <div id="calDreamDetail" style="margin-top:12px"></div>
+  </div>
+
+  <!-- HEALTH REPORT CARD -->
+  <div class="card">
+    <h2>🏥 Dream Health Report</h2>
+    <div id="healthReport"></div>
+  </div>
+
+  <!-- AI DREAM CHAT CARD -->
+  <div class="card">
+    <h2>💬 AI Dream Chat</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Ask anything about your dreams. The AI knows all your recorded dreams.</p>
+    <div class="quick-questions">
+      <button class="quick-q" onclick="sendQuickQ('Why does water keep appearing in my dreams?')">💧 Why water?</button>
+      <button class="quick-q" onclick="sendQuickQ('What is my most common emotion across all my dreams?')">🧠 Top emotion?</button>
+      <button class="quick-q" onclick="sendQuickQ('What recurring themes appear in my dreams and what might they mean?')">🔄 Themes?</button>
+      <button class="quick-q" onclick="sendQuickQ('Based on my dreams, what might be stressing me in waking life?')">😰 Stressors?</button>
+      <button class="quick-q" onclick="sendQuickQ('How have my emotions changed across my recent dreams?')">📈 Emotion trend?</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-empty">🌙 Ask anything about your dreams, or tap a quick question above.</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask about your dreams..." onkeydown="if(event.key==='Enter') sendChat()">
+      <button class="btn-primary" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <!-- DREAM COMPARISON CARD -->
+  <div class="card">
+    <h2>🔍 Dream Comparison</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Select two dreams to compare their themes, emotions, and symbols.</p>
+    <div class="compare-select-row">
+      <select id="compareA"><option value="">— Select Dream A —</option></select>
+      <select id="compareB"><option value="">— Select Dream B —</option></select>
+    </div>
+    <button class="btn-primary" onclick="compareDreams()">⚡ Compare Dreams</button>
+    <div class="compare-result" id="compareResult"></div>
+  </div>
+
+  <!-- DREAM HISTORY CARD -->
+  <div class="card">
+    <h2>📖 Dream History</h2>
+    <div id="dreamList"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let dreams = JSON.parse(localStorage.getItem("dreams")) || [];
+let currentTags = [];
+let recognition;
+let isRecording = false;
+let isDark = localStorage.getItem("theme") !== "light";
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function applyTheme() {
+  if (isDark) {
+    document.body.classList.remove("light");
+    document.getElementById("themeBtn").textContent = "☀️ Light";
+  } else {
+    document.body.classList.add("light");
+    document.getElementById("themeBtn").textContent = "🌙 Dark";
+  }
+}
+function toggleTheme() {
+  isDark = !isDark;
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  applyTheme();
+}
+applyTheme();
+
+// ─── STATUS ───────────────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const el = document.getElementById("statusMsg");
+  el.textContent = msg;
+  el.className = "status-msg " + type;
+  setTimeout(() => { el.className = "status-msg"; }, 3500);
+}
+
+// ─── TAGS ────────────────────────────────────────────────────────────────────
+function handleTagInput(e) {
+  if (e.key === "Enter" || e.key === ",") {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,/g, "");
+    if (val && !currentTags.includes(val)) {
+      currentTags.push(val);
+      renderTagChips();
+    }
+    e.target.value = "";
+  } else if (e.key === "Backspace" && e.target.value === "" && currentTags.length > 0) {
+    currentTags.pop();
+    renderTagChips();
+  }
+}
+function removeTag(tag) {
+  currentTags = currentTags.filter(t => t !== tag);
+  renderTagChips();
+}
+function renderTagChips() {
+  const area = document.getElementById("tagsArea");
+  const input = document.getElementById("tagInput");
+  area.innerHTML = "";
+  currentTags.forEach(tag => {
+    const chip = document.createElement("span");
+    chip.className = "tag-chip";
+    chip.innerHTML = `${tag} <span class="remove-tag" onclick="removeTag('${tag}')">✕</span>`;
+    area.appendChild(chip);
+  });
+  area.appendChild(input);
+  input.focus();
+}
+
+// ─── VOICE ───────────────────────────────────────────────────────────────────
+if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onstart = () => {
+    isRecording = true;
+    const btn = document.getElementById("voiceBtn");
+    btn.classList.add("recording");
+    btn.textContent = "🎤 Recording...";
+    showStatus("Listening… speak your dream now.", "info");
+  };
+  recognition.onend = () => {
+    isRecording = false;
+    const btn = document.getElementById("voiceBtn");
+    btn.classList.remove("recording");
+    btn.textContent = "🎤 Record Dream";
+  };
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById("title").value = transcript.split(".")[0].substring(0, 50) || "Voice Dream";
+    document.getElementById("description").value = transcript;
+    showStatus("Dream captured! Edit and save when ready.", "success");
+  };
+  recognition.onerror = (e) => { showStatus("Mic error: " + e.error, "error"); };
+} else {
+  document.getElementById("voiceBtn").style.display = "none";
+}
+function toggleVoiceRecording() {
+  if (!recognition) { showStatus("Speech not supported in this browser.", "error"); return; }
+  isRecording ? recognition.stop() : recognition.start();
+}
+
+// ─── ANALYSIS ENGINES ────────────────────────────────────────────────────────
+const EMOTION_KEYWORDS = {
+  fear:        ["afraid","scared","terrified","horror","nightmare","danger","threat","evil","demon","attacked","chase","chased","chasing"],
+  sadness:     ["sad","crying","cried","lost","dead","dying","loss","grave","alone","lonely","missing","grief"],
+  anxiety:     ["worried","anxious","stress","panic","nervous","unsure","uncertain","confused","trapped","overwhelmed"],
+  excitement:  ["excited","happy","joy","wonderful","amazing","fantastic","thrilled","exhilarated","incredible","fun"],
+  anger:       ["angry","furious","mad","rage","fight","conflict","arguing","aggressive","yelling","shouting"],
+  peace:       ["calm","peaceful","serene","quiet","content","relaxed","safe","gentle","still","beautiful"],
+  confusion:   ["confused","strange","weird","bewildered","different","suddenly","somehow","bizarre","random"],
+  awe:         ["huge","colossal","massive","gigantic","aura","powerful","overwhelming","enormous","breathtaking","majestic"],
+  relief:      ["protected","unharmed","escaped","safe","rescued","saved","finally","phew","relief"],
+  empowerment: ["strong","power","controlled","dominant","fearless","brave","defeated","won","victory","confident"]
+};
+
+const THEME_KEYWORDS = {
+  school:   ["school","class","exam","teacher","student","study","university","college","classroom","lecture"],
+  chase:    ["chase","chasing","chased","run","running","escape","pursuing","pursued","flee","fleeing"],
+  water:    ["water","ocean","sea","river","lake","swimming","drowning","swim","flood","rain","waves"],
+  falling:  ["fall","falling","fell","drop","dropping","plunge","plunging","cliff","abyss"],
+  home:     ["home","house","room","apartment","building","bedroom","kitchen","backyard"],
+  flying:   ["fly","flying","float","floating","soar","soaring","levitate","hovering","wings"],
+  family:   ["mother","father","mom","dad","sister","brother","family","parent","child","sibling","grandma","grandpa"],
+  work:     ["work","office","boss","meeting","project","deadline","colleague","job","career","fired"]
+};
+
+const SYMBOLS = [
+  "school","house","water","fire","death","demon","angel","family","friend","stranger",
+  "monster","door","window","road","path","forest","mountain","ocean","sky","light",
+  "darkness","snake","bird","dog","cat","car","train","clock","mirror","bridge",
+  "key","lock","baby","blood","storm","rain","sun","moon","star","tree","flower"
+];
+
+function extractEmotions(text) {
+  const lower = text.toLowerCase();
+  const detected = {};
+  for (let [emotion, words] of Object.entries(EMOTION_KEYWORDS)) {
+    let score = 0;
+    for (let w of words) { if (lower.includes(w)) score++; }
+    if (score > 0) detected[emotion] = score;
+  }
+  return detected;
+}
+
+function extractThemes(text) {
+  const lower = text.toLowerCase();
+  const found = [];
+  for (let [theme, words] of Object.entries(THEME_KEYWORDS)) {
+    if (words.some(w => lower.includes(w))) found.push(theme);
+  }
+  return found;
+}
+
+function extractSymbols(text) {
+  const lower = text.toLowerCase();
+  return SYMBOLS.filter(s => lower.includes(s));
+}
+
+function analyzeDreamScenes(text) {
+  const sentences = text.match(/[^.!?]+[.!?]?/g) || [];
+  const scenes = [];
+  let sceneNum = 1;
+  let buffer = [];
+  let prevEmotion = null;
+
+  sentences.forEach((sentence, i) => {
+    const lower = sentence.toLowerCase();
+    let scores = {};
+    for (let [emotion, words] of Object.entries(EMOTION_KEYWORDS)) {
+      scores[emotion] = words.filter(w => lower.includes(w)).length;
+    }
+    let [topEmotion, topScore] = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0] || ["neutral",0];
+    if (topScore === 0) topEmotion = "neutral";
+
+    buffer.push(sentence.trim());
+
+    const emotionChanged = prevEmotion && prevEmotion !== topEmotion && topScore > 0;
+    const isLast = i === sentences.length - 1;
+
+    if (emotionChanged || isLast || buffer.length >= 3) {
+      scenes.push({ scene: sceneNum++, text: buffer.join(" "), emotion: topEmotion });
+      buffer = [];
+    }
+    prevEmotion = topEmotion;
+  });
+
+  return scenes;
+}
+
+function buildEmotionFlow(scenes) {
+  const emotions = [];
+  scenes.forEach(s => {
+    if (s.emotion !== "neutral" && (emotions.length === 0 || emotions[emotions.length-1] !== s.emotion)) {
+      emotions.push(s.emotion);
+    }
+  });
+  return emotions.length > 0 ? emotions : ["neutral"];
+}
+
+function calculateIntensity(emotions) {
+  if (!emotions || Object.keys(emotions).length === 0) return 0;
+  const highIntensity = ["fear","anxiety","anger","empowerment","awe"];
+  let score = 0;
+  let total = 0;
+  for (let [e, count] of Object.entries(emotions)) {
+    const weight = highIntensity.includes(e) ? 2 : 1;
+    score += count * weight;
+    total += count;
+  }
+  return Math.min(100, Math.round((score / Math.max(total, 1)) * 25));
+}
+
+function detectConflicts(emotions) {
+  const positive = ["excitement","peace","relief","empowerment","awe"];
+  const negative = ["fear","sadness","anxiety","anger","confusion"];
+  const hasPos = positive.some(e => emotions[e]);
+  const hasNeg = negative.some(e => emotions[e]);
+  return hasPos && hasNeg;
+}
+
+function getDominantEmotion(emotions) {
+  if (!emotions || Object.keys(emotions).length === 0) return "neutral";
+  return Object.entries(emotions).sort((a,b)=>b[1]-a[1])[0]?.[0] || "neutral";
+}
+
+function summarizeDream(dream) {
+  const { description, themes, emotions, symbols } = dream;
+  let summary = "";
+  const dominant = getDominantEmotion(emotions);
+
+  const emotionPhrases = {
+    fear:        "This dream carries a strong undercurrent of fear or threat. ",
+    anxiety:     "There is notable stress or worry running through this dream. ",
+    sadness:     "This dream reflects emotional weight, loss, or longing. ",
+    excitement:  "The dream has high positive energy and stimulation. ",
+    peace:       "A calm, stable emotional tone dominates this dream. ",
+    anger:       "Tension, frustration, or suppressed feelings are present. ",
+    confusion:   "There is disorientation or uncertainty in the narrative. ",
+    awe:         "Something grand or overwhelming appears in this dream. ",
+    relief:      "There is a sense of release or safety achieved. ",
+    empowerment: "Feelings of strength, control, or victory stand out. "
+  };
+
+  if (emotionPhrases[dominant]) summary += emotionPhrases[dominant];
+  if (detectConflicts(emotions)) summary += "Interestingly, conflicting emotions appear — this may reflect inner tension in your waking life. ";
+
+  if (themes.includes("school")) summary += "School themes often relate to performance pressure, evaluation, or personal growth. ";
+  if (themes.includes("chase")) summary += "Being chased can represent avoiding a real-life stressor or unresolved issue. ";
+  if (themes.includes("water")) summary += "Water often symbolizes emotion, the subconscious, or depth of feeling. ";
+  if (themes.includes("falling")) summary += "Falling can represent a loss of control, insecurity, or instability. ";
+  if (themes.includes("flying")) summary += "Flying often reflects a desire for freedom, escape, or elevated perspective. ";
+  if (themes.includes("home")) summary += "Home imagery relates to identity, safety, or personal foundations. ";
+  if (themes.includes("family")) summary += "Family presence may reflect relationships, roles, or emotional connections. ";
+
+  if (symbols.includes("door")) summary += "A door symbol suggests transition, opportunity, or a choice to be made. ";
+  if (symbols.includes("mirror")) summary += "Mirrors often represent self-reflection or identity. ";
+  if (symbols.includes("water")) summary += "The presence of water reinforces emotional undertones. ";
+
+  return summary || "This dream contains mixed or unclear symbolic patterns. Try adding more detail.";
+}
+
+function detectRecurringThemes(dreams) {
+  const counts = {};
+  dreams.forEach(d => (d.themes||[]).forEach(t => { counts[t] = (counts[t]||0) + 1; }));
+  return Object.entries(counts).filter(([,c])=>c>=2).sort((a,b)=>b[1]-a[1]).map(([theme,occurrences])=>({theme,occurrences}));
+}
+
+function getSymbolFrequency(dreams) {
+  const counts = {};
+  dreams.forEach(d => (d.symbols||[]).forEach(s => { counts[s] = (counts[s]||0) + 1; }));
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([symbol,count])=>({symbol,count}));
+}
+
+function getSymbolCoOccurrences(dreams, targetSymbol) {
+  const counts = {};
+  dreams.forEach(d => {
+    if ((d.symbols||[]).includes(targetSymbol)) {
+      (d.symbols||[]).forEach(s => {
+        if (s !== targetSymbol) counts[s] = (counts[s]||0) + 1;
+      });
+    }
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s])=>s);
+}
+
+// ─── EMOTION HELPERS ─────────────────────────────────────────────────────────
+const EMOTION_ICONS = {
+  fear:"😨", sadness:"😢", anxiety:"😰", excitement:"🤩", anger:"😠",
+  peace:"😌", confusion:"😕", awe:"🌟", relief:"😅", empowerment:"💪", neutral:"😐"
+};
+const EMOTION_BG = {
+  fear:"ebg-fear", sadness:"ebg-sadness", anxiety:"ebg-anxiety", excitement:"ebg-excitement",
+  anger:"ebg-anger", peace:"ebg-peace", confusion:"ebg-confusion", awe:"ebg-awe",
+  relief:"ebg-relief", empowerment:"ebg-empowerment", neutral:"ebg-neutral"
+};
+function emojiFor(e) { return EMOTION_ICONS[e] || "😐"; }
+function bgFor(e) { return EMOTION_BG[e] || "ebg-neutral"; }
+
+// ─── SAVE DREAM ──────────────────────────────────────────────────────────────
+function saveDream() {
+  const title       = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const recentEvents   = document.getElementById("recentEvents").value.trim();
+  const beforeSleep    = document.getElementById("beforeSleep").value.trim();
+  const recentThoughts = document.getElementById("recentThoughts").value.trim();
+
+  if (!title) { showStatus("Please enter a dream title.", "error"); return; }
+  if (!description) { showStatus("Please describe your dream.", "error"); return; }
+
+  const emotions   = extractEmotions(description);
+  const themes     = extractThemes(description);
+  const symbols    = extractSymbols(description);
+  const scenes     = analyzeDreamScenes(description);
+  const emotionFlow = buildEmotionFlow(scenes);
+  const intensity  = calculateIntensity(emotions);
+  const dominant   = getDominantEmotion(emotions);
+  const hasConflict = detectConflicts(emotions);
+
+  const dream = {
+    id: Date.now(),
+    title, description, recentEvents, beforeSleep, recentThoughts,
+    emotions, themes, symbols, scenes, emotionFlow, intensity, dominant, hasConflict,
+    tags: [...currentTags],
+    favorite: false,
+    date: new Date().toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" }),
+    timestamp: Date.now()
+  };
+
+  dreams.push(dream);
+  localStorage.setItem("dreams", JSON.stringify(dreams));
+
+  // Clear form
+  document.getElementById("title").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("recentEvents").value = "";
+  document.getElementById("beforeSleep").value = "";
+  document.getElementById("recentThoughts").value = "";
+  currentTags = [];
+  renderTagChips();
+
+  showStatus("✅ Dream saved with full analysis!", "success");
+  renderDreams();
+}
+
+// ─── FAVORITE ────────────────────────────────────────────────────────────────
+function toggleFavorite(id) {
+  dreams = dreams.map(d => d.id === id ? {...d, favorite: !d.favorite} : d);
+  localStorage.setItem("dreams", JSON.stringify(dreams));
+  renderDreams();
+}
+
+// ─── DELETE ──────────────────────────────────────────────────────────────────
+function deleteDream(id) {
+  if (!confirm("Delete this dream? This cannot be undone.")) return;
+  dreams = dreams.filter(d => d.id !== id);
+  localStorage.setItem("dreams", JSON.stringify(dreams));
+  renderDreams();
+}
+
+// ─── TOGGLE PANELS ───────────────────────────────────────────────────────────
+function togglePanel(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle("open");
+}
+
+// ─── RENDER DREAMS ───────────────────────────────────────────────────────────
+function getFilteredDreams() {
+  const text    = (document.getElementById("searchText")?.value || "").toLowerCase();
+  const emotion = document.getElementById("searchEmotion")?.value || "";
+  const theme   = document.getElementById("searchTheme")?.value || "";
+
+  return dreams.slice().reverse().filter(d => {
+    const matchText  = !text    || d.title.toLowerCase().includes(text) || d.description.toLowerCase().includes(text);
+    const matchEmo   = !emotion || (d.emotions && d.emotions[emotion]);
+    const matchTheme = !theme   || (d.themes   && d.themes.includes(theme));
+    return matchText && matchEmo && matchTheme;
+  });
+}
+
+function renderDreams() {
+  const list = document.getElementById("dreamList");
+  const filtered = getFilteredDreams();
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">🌙</div><p>${dreams.length === 0 ? "No dreams recorded yet. Add your first dream above!" : "No dreams match your search."}</p></div>`;
+    updateStats();
+    return;
+  }
+
+  list.innerHTML = filtered.map((dream, idx) => {
+    // Emotion badges
+    const badges = Object.entries(dream.emotions || {}).sort((a,b)=>b[1]-a[1]).map(([e,c]) =>
+      `<span class="emotion-badge ${bgFor(e)}">${emojiFor(e)} ${e.toUpperCase()} ×${c}</span>`
+    ).join("");
+
+    // Tags
+    const tagHTML = (dream.tags || []).map(t => `<span class="dream-tag">${t}</span>`).join("");
+
+    // Emotion flow
+    const flowHTML = (dream.emotionFlow || ["neutral"]).map((e,i,arr) =>
+      `<span class="emotion-badge ${bgFor(e)}" style="font-size:11px;padding:3px 8px">${emojiFor(e)} ${e}</span>${i < arr.length-1 ? '<span class="flow-arrow">→</span>' : ''}`
+    ).join("");
+
+    // Scenes
+    const scenesHTML = (dream.scenes || []).map(s =>
+      `<div class="scene-item"><div>${s.text}</div><div class="scene-emotion">${emojiFor(s.emotion)} ${s.emotion.toUpperCase()}</div></div>`
+    ).join("");
+
+    // Symbols
+    const symHTML = (dream.symbols || []).length > 0
+      ? dream.symbols.map(s => `<span class="symbol-tag">${s}</span>`).join("")
+      : `<span style="color:var(--text-muted);font-size:13px">No symbols detected</span>`;
+
+    // Intensity
+    const intPct = dream.intensity || 0;
+
+    const conflictBadge = dream.hasConflict
+      ? `<span style="font-size:11px;background:rgba(247,181,76,0.2);color:var(--warn);padding:3px 9px;border-radius:10px;font-weight:700;margin-left:6px">⚡ Emotional Conflict</span>`
+      : "";
+
+    return `
+    <div class="dream-entry ${dream.favorite ? 'favorite' : ''}" id="dream-${dream.id}">
+      <div class="dream-header">
+        <div>
+          <div class="dream-title">${dream.title} ${conflictBadge}</div>
+          <div class="dream-date">📅 ${dream.date} · ${dream.dominant ? `Dominant: ${emojiFor(dream.dominant)} ${dream.dominant}` : ''}</div>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button class="btn-fav" onclick="toggleFavorite(${dream.id})" title="Favorite">${dream.favorite ? '⭐' : '☆'}</button>
+          <button class="btn-danger btn-sm" onclick="deleteDream(${dream.id})">🗑</button>
+        </div>
+      </div>
+
+      <div class="dream-desc">${dream.description.length > 200 ? dream.description.substring(0,200)+'…' : dream.description}</div>
+
+      ${tagHTML ? `<div class="dream-tags">${tagHTML}</div>` : ''}
+
+      <div class="emotion-badges">${badges || '<span style="color:var(--text-muted);font-size:13px">No emotions detected</span>'}</div>
+
+      <div class="intensity-wrap">
+        <div class="intensity-label">Emotional Intensity</div>
+        <div class="intensity-track">
+          <div class="intensity-fill" style="width:${intPct}%">${intPct > 10 ? intPct+'%' : ''}</div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="btn-sm" onclick="togglePanel('summary-${dream.id}')">✨ Summary</button>
+        <button class="btn-sm" onclick="togglePanel('analysis-${dream.id}')">📊 Analysis</button>
+        <button class="btn-sm" onclick="aiInterpretDream(${dream.id})">🤖 AI Interpret</button>
+      </div>
+
+      <!-- SUMMARY -->
+      <div class="summary-box" id="summary-${dream.id}">
+        ${summarizeDream(dream)}
+      </div>
+
+      <!-- AI INTERPRETATION -->
+      <div class="ai-response" id="ai-${dream.id}"></div>
+
+      <!-- ANALYSIS PANEL -->
+      <div class="analysis-panel" id="analysis-${dream.id}">
+
+        <div class="analysis-section">
+          <h4>🎭 Emotion Flow</h4>
+          <div class="emotion-flow-row">${flowHTML}</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🎬 Dream Scenes</h4>
+          <div class="scene-list">${scenesHTML || '<p style="color:var(--text-muted);font-size:13px">No scenes detected.</p>'}</div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>📍 Themes Detected</h4>
+          <div class="symbol-tags">
+            ${(dream.themes||[]).length > 0
+              ? dream.themes.map(t=>`<span class="symbol-tag" style="color:var(--success);background:rgba(46,204,138,0.1);border-color:rgba(46,204,138,0.3)">📌 ${t}</span>`).join("")
+              : '<span style="color:var(--text-muted);font-size:13px">No themes detected</span>'}
+          </div>
+        </div>
+
+        <div class="analysis-section">
+          <h4>🔮 Symbols Detected</h4>
+          <div class="symbol-tags">${symHTML}</div>
+        </div>
+
+        ${dream.recentEvents || dream.beforeSleep || dream.recentThoughts ? `
+        <div class="analysis-section">
+          <h4>🧠 Context (CDWT)</h4>
+          ${dream.recentEvents ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:6px"><strong style="color:var(--text)">Recent Events:</strong> ${dream.recentEvents}</p>` : ''}
+          ${dream.beforeSleep ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:6px"><strong style="color:var(--text)">Before Sleep:</strong> ${dream.beforeSleep}</p>` : ''}
+          ${dream.recentThoughts ? `<p style="font-size:13px;color:var(--text-muted)"><strong style="color:var(--text)">Recent Thoughts:</strong> ${dream.recentThoughts}</p>` : ''}
+        </div>` : ''}
+
+      </div>
+    </div>`;
+  }).join("");
+
+  updateStats();
+  populateCompareSelects();
+  renderMainChart();
+  renderCalendar();
+  renderHealthReport();
+}
+
+// ─── UPDATE STATS ────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById("totalDreamsNum").textContent = dreams.length;
+
+  // Emotion stats
+  const emotionTotals = {};
+  dreams.forEach(d => {
+    for (let [e,c] of Object.entries(d.emotions||{})) {
+      emotionTotals[e] = (emotionTotals[e]||0) + c;
+    }
+  });
+  const sortedEmotions = Object.entries(emotionTotals).sort((a,b)=>b[1]-a[1]);
+  document.getElementById("allEmotionStats").innerHTML = sortedEmotions.length > 0
+    ? `<div class="emotion-grid">${sortedEmotions.map(([e,c])=>`
+        <div class="emotion-stat-item" style="border-left-color:var(--${e==='fear'?'error':e==='peace'?'accent3':'accent'})">
+          <span>${emojiFor(e)} ${e.charAt(0).toUpperCase()+e.slice(1)}</span>
+          <span class="emotion-stat-count">${c}</span>
+        </div>`).join("")}</div>`
+    : '<p style="color:var(--text-muted);font-size:13px">No emotions recorded yet.</p>';
+
+  // Recurring themes
+  const recurring = detectRecurringThemes(dreams);
+  document.getElementById("recurringThemesStats").innerHTML = recurring.length > 0
+    ? `<div class="theme-grid">${recurring.map(({theme,occurrences})=>`
+        <div class="theme-item">
+          <span>📌 ${theme.charAt(0).toUpperCase()+theme.slice(1)}</span>
+          <span class="theme-count">${occurrences} dreams</span>
+        </div>`).join("")}</div>`
+    : '<p style="color:var(--text-muted);font-size:13px">Record more dreams to see recurring patterns.</p>';
+
+  // Symbol intelligence
+  const symFreq = getSymbolFrequency(dreams);
+  document.getElementById("symbolStats").innerHTML = symFreq.length > 0
+    ? `<div class="symbol-tags" style="margin-bottom:10px">${symFreq.slice(0,10).map(({symbol,count})=>{
+        const related = getSymbolCoOccurrences(dreams, symbol);
+        const tip = related.length > 0 ? ` · often with: ${related.join(', ')}` : '';
+        return `<span class="symbol-tag" title="${count} appearances${tip}">🔮 ${symbol} ×${count}</span>`;
+      }).join("")}</div>`
+    : '<p style="color:var(--text-muted);font-size:13px">Symbols will appear after you record dreams.</p>';
+}
+
+// ─── PHASE 2: AI FEATURES ────────────────────────────────────────────────────
+
+// Build a summary of all dreams to give AI context
+function buildDreamsContext() {
+  if (dreams.length === 0) return "The user has not recorded any dreams yet.";
+  return dreams.map((d, i) => {
+    const emotions = Object.keys(d.emotions || {}).join(", ") || "none detected";
+    const themes = (d.themes || []).join(", ") || "none";
+    const symbols = (d.symbols || []).join(", ") || "none";
+    return `Dream ${i+1}: "${d.title}" (${d.date})
+Description: ${d.description}
+Emotions: ${emotions} | Themes: ${themes} | Symbols: ${symbols}
+Recent Events: ${d.recentEvents || "not provided"}
+Before Sleep: ${d.beforeSleep || "not provided"}
+Recent Thoughts: ${d.recentThoughts || "not provided"}`;
+  }).join("\n\n---\n\n");
+}
+
+async function callAI(systemPrompt, userMessage) {
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMessage }]
+      })
+    });
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.content.map(c => c.text || "").join("").trim();
+  } catch(e) {
+    return generateSmartFallback(userMessage);
+  }
+}
+
+function generateSmartFallback(question) {
+  const q = question.toLowerCase();
+  if (dreams.length === 0) return "🌙 You haven't recorded any dreams yet! Add your first dream above and I'll be able to analyze it for you.";
+
+  const emotionTotals = {};
+  dreams.forEach(d => { for (let [e,c] of Object.entries(d.emotions||{})) emotionTotals[e]=(emotionTotals[e]||0)+c; });
+  const topEmotion = Object.entries(emotionTotals).sort((a,b)=>b[1]-a[1])[0];
+
+  const themeCounts = {};
+  dreams.forEach(d => (d.themes||[]).forEach(t=>{themeCounts[t]=(themeCounts[t]||0)+1;}));
+  const topTheme = Object.entries(themeCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  const symCounts = {};
+  dreams.forEach(d => (d.symbols||[]).forEach(s=>{symCounts[s]=(symCounts[s]||0)+1;}));
+  const topSymbol = Object.entries(symCounts).sort((a,b)=>b[1]-a[1])[0];
+
+  if (q.includes("water")) {
+    const wc = symCounts["water"]||0;
+    return wc>0 ? `💧 Water appears in ${wc} of your dreams. In psychology, water symbolizes the subconscious and emotional depth. Calm water = peace; turbulent water = emotional turmoil.` : "💧 Water hasn't appeared in your dreams yet. When it does, it typically symbolizes emotions and transitions.";
+  }
+  if (q.includes("stress")||q.includes("anxiety")||q.includes("worry")) {
+    const s=(emotionTotals["anxiety"]||0)+(emotionTotals["fear"]||0)+(emotionTotals["confusion"]||0);
+    return s>3 ? `😰 Your dreams show signs of stress — anxiety and fear appear frequently. Your mind may be processing pressure from your waking life. Consider what's weighing on you most.` : "😌 Your dreams don't show strong stress indicators right now. Keep recording to track changes!";
+  }
+  if (q.includes("theme")||q.includes("recurring")||q.includes("pattern")) {
+    return topTheme ? `🔄 Your most recurring theme is **${topTheme[0]}** in ${topTheme[1]} dreams. ${topTheme[0]==="school"?"School themes reflect feelings of evaluation or performance pressure.":topTheme[0]==="chase"?"Being chased often means avoiding something in waking life that needs confronting.":topTheme[0]==="water"?"Water reflects your emotional state.":"This theme likely connects to something significant in your life."}` : "🔄 No strong themes yet — record more dreams to reveal patterns!";
+  }
+  if (q.includes("emotion")||q.includes("feel")) {
+    return topEmotion ? `🧠 Your dominant dream emotion is **${topEmotion[0]}** (${topEmotion[1]} occurrences). ${topEmotion[0]==="anxiety"?"This often reflects unresolved stress in waking life.":topEmotion[0]==="peace"?"This suggests your subconscious is in a healthy state.":topEmotion[0]==="fear"?"Recurring fear may indicate your mind is processing perceived challenges.":"Reflect on what in your life might be triggering this feeling."}` : "🧠 Not enough emotional data yet. Add more dream descriptions!";
+  }
+  if (q.includes("symbol")) {
+    return topSymbol ? `🔮 Your top symbol is **${topSymbol[0]}** (${topSymbol[1]} times). ${topSymbol[0]==="door"?"Doors symbolize new opportunities or transitions.":topSymbol[0]==="water"?"Water represents emotions and the subconscious.":"This symbol likely carries personal meaning from your experiences."} Reflect on what it means to you personally.` : "🔮 No strong symbols yet. Add more detailed dream descriptions!";
+  }
+
+  const recent = dreams[dreams.length-1];
+  return `🌙 You have ${dreams.length} dream${dreams.length!==1?"s":""} recorded. ${topEmotion?`Your dominant emotion is **${topEmotion[0]}**.`:""}${topTheme?` Most common theme: **${topTheme[0]}**.`:""} Your latest dream was "${recent.title}". Keep recording for deeper insights!`;
+}
+
+// ── AI INTERPRET DREAM ───────────────────────────────────────────────────────
+async function aiInterpretDream(dreamId) {
+  const dream = dreams.find(d => d.id === dreamId);
+  if (!dream) return;
+
+  const el = document.getElementById(`ai-${dreamId}`);
+  el.className = "ai-response open";
+  el.innerHTML = `<div class="ai-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Analyzing dream...</div>`;
+
+  try {
+    const system = `You are a psychological dream analyst specializing in Cognitive Dream Wave Theory (CDWT). 
+You provide thoughtful, grounded, non-mystical interpretations of dreams based on psychology and the user's waking life context.
+Be warm, insightful, and specific. Format your response with clear sections using emojis as headers.
+Keep your response concise (under 250 words).`;
+
+    const user = `Please interpret this dream:
+
+Title: "${dream.title}"
+Description: ${dream.description}
+Emotions detected: ${Object.keys(dream.emotions||{}).join(", ") || "none"}
+Themes: ${(dream.themes||[]).join(", ") || "none"}
+Symbols: ${(dream.symbols||[]).join(", ") || "none"}
+Recent Events: ${dream.recentEvents || "not provided"}
+Before Sleep: ${dream.beforeSleep || "not provided"}
+Recent Thoughts: ${dream.recentThoughts || "not provided"}
+
+Provide:
+🧠 Core Psychological Meaning
+🌱 Possible Waking Life Sources
+💡 What This May Be Telling You
+🔮 Key Symbols Explained (if any)`;
+
+    const result = await callAI(system, user);
+    el.innerHTML = result;
+  } catch (err) {
+    el.innerHTML = `⚠️ AI unavailable: ${err.message}`;
+  }
+}
+
+// ── AI DREAM CHAT ────────────────────────────────────────────────────────────
+let chatHistory = [];
+
+function sendQuickQ(question) {
+  document.getElementById("chatInput").value = question;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById("chatInput");
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = "";
+
+  const messagesEl = document.getElementById("chatMessages");
+
+  // Remove empty state
+  const empty = messagesEl.querySelector(".chat-empty");
+  if (empty) empty.remove();
+
+  // Add user message
+  messagesEl.innerHTML += `<div class="chat-msg user">${question}</div>`;
+
+  // Add thinking bubble
+  const thinkingId = "thinking-" + Date.now();
+  messagesEl.innerHTML += `<div class="chat-msg thinking" id="${thinkingId}">🤖 Thinking...</div>`;
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  chatHistory.push({ role: "user", content: question });
+
+  try {
+    const system = `You are DreamMapper's AI assistant — a warm, insightful dream analyst using psychology and Cognitive Dream Wave Theory (CDWT).
+You have access to all of the user's recorded dreams. Answer questions about patterns, emotions, symbols, and what dreams might mean.
+Be concise, specific, and helpful. Keep responses under 200 words.
+
+Here are the user's recorded dreams:
+
+${buildDreamsContext()}`;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system,
+        messages: chatHistory
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+    const reply = data.content.map(c => c.text || "").join("").trim();
+
+    chatHistory.push({ role: "assistant", content: reply });
+
+    document.getElementById(thinkingId).remove();
+    messagesEl.innerHTML += `<div class="chat-msg ai">${reply}</div>`;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  } catch (err) {
+    document.getElementById(thinkingId).remove();
+    messagesEl.innerHTML += `<div class="chat-msg ai">⚠️ AI unavailable right now: ${err.message}</div>`;
+    chatHistory.pop();
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+}
+
+// ── DREAM COMPARISON ─────────────────────────────────────────────────────────
+function populateCompareSelects() {
+  const selA = document.getElementById("compareA");
+  const selB = document.getElementById("compareB");
+  if (!selA || !selB) return;
+  const opts = dreams.map(d => `<option value="${d.id}">${d.title} (${d.date})</option>`).join("");
+  selA.innerHTML = `<option value="">— Select Dream A —</option>${opts}`;
+  selB.innerHTML = `<option value="">— Select Dream B —</option>${opts}`;
+}
+
+async function compareDreams() {
+  const idA = document.getElementById("compareA").value;
+  const idB = document.getElementById("compareB").value;
+
+  if (!idA || !idB) { alert("Please select two dreams to compare."); return; }
+  if (idA === idB) { alert("Please select two different dreams."); return; }
+
+  const dreamA = dreams.find(d => String(d.id) === idA);
+  const dreamB = dreams.find(d => String(d.id) === idB);
+  if (!dreamA || !dreamB) return;
+
+  const resultEl = document.getElementById("compareResult");
+  resultEl.className = "compare-result open";
+  resultEl.innerHTML = `<div class="ai-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div> Comparing dreams...</div>`;
+
+  // Quick local similarity score
+  const sharedThemes = (dreamA.themes||[]).filter(t => (dreamB.themes||[]).includes(t));
+  const sharedSymbols = (dreamA.symbols||[]).filter(s => (dreamB.symbols||[]).includes(s));
+  const sharedEmotions = Object.keys(dreamA.emotions||{}).filter(e => dreamB.emotions?.[e]);
+  const simScore = Math.min(100, Math.round(
+    (sharedThemes.length * 20) + (sharedEmotions.length * 15) + (sharedSymbols.length * 10)
+  ));
+
+  try {
+    const system = `You are a dream analyst comparing two dreams using psychological analysis and CDWT principles.
+Be specific about what the dreams share and what differs. Keep response under 250 words.
+Format with clear emoji sections.`;
+
+    const user = `Compare these two dreams:
+
+DREAM A: "${dreamA.title}"
+${dreamA.description}
+Emotions: ${Object.keys(dreamA.emotions||{}).join(", ")||"none"}
+Themes: ${(dreamA.themes||[]).join(", ")||"none"}
+Symbols: ${(dreamA.symbols||[]).join(", ")||"none"}
+
+DREAM B: "${dreamB.title}"
+${dreamB.description}
+Emotions: ${Object.keys(dreamB.emotions||{}).join(", ")||"none"}
+Themes: ${(dreamB.themes||[]).join(", ")||"none"}
+Symbols: ${(dreamB.symbols||[]).join(", ")||"none"}
+
+Provide:
+🔗 Shared Patterns
+🌓 Key Differences
+🧠 What This Pattern Might Mean
+💡 Insight`;
+
+    const aiText = await callAI(system, user);
+
+    const simBar = `
+      <div class="similarity-bar-wrap">
+        <div class="similarity-label">Dream Similarity Score</div>
+        <div class="similarity-track">
+          <div class="similarity-fill" style="width:${simScore}%">${simScore}%</div>
+        </div>
+      </div>
+      ${sharedThemes.length > 0 ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:6px">🔗 Shared themes: <strong style="color:var(--text)">${sharedThemes.join(", ")}</strong></p>` : ""}
+      ${sharedEmotions.length > 0 ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:10px">🧠 Shared emotions: <strong style="color:var(--text)">${sharedEmotions.join(", ")}</strong></p>` : ""}
+      <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+    `;
+
+    resultEl.innerHTML = simBar + aiText;
+  } catch (err) {
+    resultEl.innerHTML = `⚠️ AI unavailable: ${err.message}`;
+  }
+}
+
+// ─── PHASE 3: ANALYTICS & CALENDAR ──────────────────────────────────────────
+
+let mainChartInstance = null;
+let currentChartType = 'emotions';
+
+const CHART_COLORS = [
+  '#7c6ff7','#b06cf7','#6fc8f7','#2ecc8a','#f7b54c',
+  '#f7546c','#f76c40','#3a9fd6','#2eccc0','#8c7660'
+];
+
+const EMOTION_COLORS = {
+  fear:'#f7546c', sadness:'#5b72f7', anxiety:'#f7a04c',
+  excitement:'#2ecc8a', anger:'#9b4ee8', peace:'#3a9fd6',
+  confusion:'#8c7660', awe:'#f7d54c', relief:'#2eccc0',
+  empowerment:'#f76c40', neutral:'#666'
+};
+
+function switchChart(type) {
+  currentChartType = type;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMainChart();
+}
+
+function renderMainChart() {
+  const canvas = document.getElementById('mainChart');
+  const legend = document.getElementById('chartLegend');
+  if (!canvas) return;
+
+  if (mainChartInstance) { mainChartInstance.destroy(); mainChartInstance = null; }
+  legend.innerHTML = '';
+
+  if (dreams.length === 0) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.style.display = 'none';
+    legend.innerHTML = '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">Record dreams to see analytics.</p>';
+    return;
+  }
+  canvas.style.display = 'block';
+
+  const isDarkMode = !document.body.classList.contains('light');
+  const gridColor = isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const textColor = isDarkMode ? '#8882b8' : '#6059a0';
+
+  const ctx = canvas.getContext('2d');
+
+  if (currentChartType === 'emotions') {
+    // Bar chart of emotion totals
+    const totals = {};
+    dreams.forEach(d => {
+      for (let [e,c] of Object.entries(d.emotions||{})) totals[e] = (totals[e]||0)+c;
+    });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const labels = sorted.map(([e])=>e.charAt(0).toUpperCase()+e.slice(1));
+    const data   = sorted.map(([,c])=>c);
+    const colors = sorted.map(([e])=>EMOTION_COLORS[e]||'#7c6ff7');
+
+    mainChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } },
+          y: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true }
+        },
+        responsive: true, maintainAspectRatio: true
+      }
+    });
+
+  } else if (currentChartType === 'themes') {
+    // Horizontal bar chart of themes
+    const counts = {};
+    dreams.forEach(d => (d.themes||[]).forEach(t => { counts[t] = (counts[t]||0)+1; }));
+    const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const labels = sorted.map(([t])=>t.charAt(0).toUpperCase()+t.slice(1));
+    const data   = sorted.map(([,c])=>c);
+
+    mainChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: CHART_COLORS, borderRadius: 6 }] },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor }, beginAtZero: true },
+          y: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } }
+        },
+        responsive: true, maintainAspectRatio: true
+      }
+    });
+
+  } else if (currentChartType === 'timeline') {
+    // Line chart: dreams per day over last 30 days
+    const last30 = [];
+    const counts = {};
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const key = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      last30.push(key); counts[key] = 0;
+    }
+    dreams.forEach(d => {
+      const key = new Date(d.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      if (counts[key] !== undefined) counts[key]++;
+    });
+
+    mainChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: last30,
+        datasets: [{
+          data: last30.map(k=>counts[k]),
+          borderColor: '#7c6ff7',
+          backgroundColor: 'rgba(124,111,247,0.15)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#7c6ff7',
+          pointRadius: 4
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 9 }, maxRotation: 45 }, grid: { color: gridColor } },
+          y: { ticks: { color: textColor, font: { size: 11 }, stepSize: 1 }, grid: { color: gridColor }, beginAtZero: true }
+        },
+        responsive: true, maintainAspectRatio: true
+      }
+    });
+
+  } else if (currentChartType === 'donut') {
+    // Donut chart of emotion distribution
+    const totals = {};
+    dreams.forEach(d => {
+      for (let [e,c] of Object.entries(d.emotions||{})) totals[e] = (totals[e]||0)+c;
+    });
+    const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const labels = sorted.map(([e])=>e.charAt(0).toUpperCase()+e.slice(1));
+    const data   = sorted.map(([,c])=>c);
+    const colors = sorted.map(([e])=>EMOTION_COLORS[e]||'#7c6ff7');
+
+    mainChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: isDarkMode?'#141428':'#ffffff' }] },
+      options: {
+        plugins: { legend: { display: false } },
+        cutout: '65%',
+        responsive: true, maintainAspectRatio: true
+      }
+    });
+
+    // Custom legend
+    legend.innerHTML = sorted.map(([e],i) =>
+      `<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div><span>${labels[i]}</span></div>`
+    ).join('');
+  }
+}
+
+// ─── CALENDAR ────────────────────────────────────────────────────────────────
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+function renderCalendar() {
+  const title = document.getElementById('calTitle');
+  const grid  = document.getElementById('calGrid');
+  if (!title || !grid) return;
+
+  const monthName = new Date(calYear, calMonth).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  title.textContent = monthName;
+
+  // Build set of days that have dreams
+  const dreamDays = {};
+  dreams.forEach(d => {
+    const dt = new Date(d.timestamp);
+    if (dt.getFullYear()===calYear && dt.getMonth()===calMonth) {
+      const day = dt.getDate();
+      if (!dreamDays[day]) dreamDays[day] = [];
+      dreamDays[day].push(d);
+    }
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+
+  const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = dayLabels.map(d=>`<div class="cal-day-label">${d}</div>`).join('');
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d===today.getDate() && calMonth===today.getMonth() && calYear===today.getFullYear();
+    const hasDream = dreamDays[d];
+    let cls = 'cal-day';
+    if (hasDream) cls += ' has-dream';
+    if (isToday) cls += ' today';
+    const onclick = hasDream ? `showCalDreams(${d})` : '';
+    html += `<div class="${cls}" ${onclick?`onclick="${onclick}"`:''}>${d}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+function showCalDreams(day) {
+  const detail = document.getElementById('calDreamDetail');
+  const dt = new Date(calYear, calMonth, day);
+  const dayDreams = dreams.filter(d => {
+    const dd = new Date(d.timestamp);
+    return dd.getFullYear()===calYear && dd.getMonth()===calMonth && dd.getDate()===day;
+  });
+
+  if (dayDreams.length === 0) { detail.innerHTML=''; return; }
+
+  detail.innerHTML = `
+    <div style="background:var(--surface2);border-radius:10px;padding:12px;border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:8px">
+        📅 ${dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}
+      </div>
+      ${dayDreams.map(d=>`
+        <div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+          <div style="font-weight:700;font-size:14px">${d.title}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${d.description.substring(0,100)}…</div>
+          <div style="margin-top:4px">${Object.keys(d.emotions||{}).slice(0,3).map(e=>
+            `<span class="emotion-badge ${bgFor(e)}" style="font-size:11px;padding:2px 7px">${emojiFor(e)} ${e}</span>`
+          ).join('')}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); document.getElementById('calDreamDetail').innerHTML=''; }
+function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); document.getElementById('calDreamDetail').innerHTML=''; }
+
+// ─── HEALTH REPORT ───────────────────────────────────────────────────────────
+function renderHealthReport() {
+  const el = document.getElementById('healthReport');
+  if (!el) return;
+
+  if (dreams.length === 0) {
+    el.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Record at least one dream to see your health report.</p>';
+    return;
+  }
+
+  // Calculate metrics
+  const totalDreams = dreams.length;
+  const recent = dreams.slice(-7); // last 7 dreams
+
+  // Emotion balance
+  const allEmotions = {};
+  dreams.forEach(d => { for(let [e,c] of Object.entries(d.emotions||{})) allEmotions[e]=(allEmotions[e]||0)+c; });
+  const positive = ['excitement','peace','relief','empowerment','awe'];
+  const negative = ['fear','sadness','anxiety','anger','confusion'];
+  const posScore = positive.reduce((s,e)=>s+(allEmotions[e]||0),0);
+  const negScore = negative.reduce((s,e)=>s+(allEmotions[e]||0),0);
+  const total = posScore + negScore || 1;
+  const balanceScore = Math.round((posScore/total)*100);
+
+  // Avg intensity
+  const avgIntensity = Math.round(dreams.reduce((s,d)=>s+(d.intensity||0),0)/totalDreams);
+
+  // Conflict rate
+  const conflictCount = dreams.filter(d=>d.hasConflict).length;
+  const conflictRate = Math.round((conflictCount/totalDreams)*100);
+
+  // Most common emotion
+  const topEmotion = Object.entries(allEmotions).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'none';
+
+  // Most common theme
+  const themeCounts = {};
+  dreams.forEach(d=>(d.themes||[]).forEach(t=>{themeCounts[t]=(themeCounts[t]||0)+1;}));
+  const topTheme = Object.entries(themeCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || 'none';
+
+  // Streak
+  let streak = 0;
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const hasEntry = dreams.some(dr=>{
+      const dd = new Date(dr.timestamp); dd.setHours(0,0,0,0);
+      return dd.getTime()===d.getTime();
+    });
+    if (hasEntry) streak++; else break;
+  }
+
+  // Overall health score
+  const healthScore = Math.round((balanceScore*0.4)+(Math.max(0,100-avgIntensity)*0.3)+((100-conflictRate)*0.3));
+
+  // Score color
+  const scoreColor = healthScore>=70?'var(--success)':healthScore>=40?'var(--warn)':'var(--error)';
+  const pct = healthScore/100;
+  const deg = Math.round(pct*360);
+
+  el.innerHTML = `
+    <div class="health-score-wrap">
+      <div class="health-score-circle" style="background:conic-gradient(${scoreColor} ${deg}deg, var(--surface2) ${deg}deg)">
+        <div class="health-score-num">${healthScore}</div>
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:${scoreColor}">${healthScore>=70?'Good 😊':healthScore>=40?'Mixed 😐':'Needs Attention 😔'}</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px">Based on ${totalDreams} dream${totalDreams!==1?'s':''}</div>
+      </div>
+    </div>
+
+    <div class="health-items">
+      <div class="health-item">
+        <span>😊 Positive Emotion Balance</span>
+        <span class="health-badge ${balanceScore>=60?'badge-good':balanceScore>=40?'badge-warn':'badge-alert'}">${balanceScore}%</span>
+      </div>
+      <div class="health-item">
+        <span>🔥 Average Dream Intensity</span>
+        <span class="health-badge ${avgIntensity<=40?'badge-good':avgIntensity<=70?'badge-warn':'badge-alert'}">${avgIntensity}%</span>
+      </div>
+      <div class="health-item">
+        <span>⚡ Emotional Conflict Rate</span>
+        <span class="health-badge ${conflictRate<=20?'badge-good':conflictRate<=50?'badge-warn':'badge-alert'}">${conflictRate}%</span>
+      </div>
+      <div class="health-item">
+        <span>🧠 Dominant Emotion</span>
+        <span class="health-badge badge-neutral">${emojiFor(topEmotion)} ${topEmotion.charAt(0).toUpperCase()+topEmotion.slice(1)}</span>
+      </div>
+      <div class="health-item">
+        <span>📌 Most Common Theme</span>
+        <span class="health-badge badge-neutral">📌 ${topTheme.charAt(0).toUpperCase()+topTheme.slice(1)}</span>
+      </div>
+      <div class="health-item">
+        <span>🔥 Current Streak</span>
+        <span class="health-badge ${streak>=3?'badge-good':streak>=1?'badge-warn':'badge-alert'}">${streak} day${streak!==1?'s':''}</span>
+      </div>
+    </div>
+  `;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderDreams();
+populateCompareSelects();
+renderMainChart();
+renderCalendar();
+renderHealthReport();
+</script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-QJMKXPN1L7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-QJMKXPN1L7');
+</script>
+</body>
+</html>
